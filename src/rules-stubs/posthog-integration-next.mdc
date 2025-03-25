@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: apply when interacting with PostHog/analytics tasks
+globs: *posthog.ts
+alwaysApply: false
+---
+
+Do not invent new means of integrating PostHog. Instead, reference this installation snippet and plan any modifications accordingly:
+
+{integration-fragment}
+
+Never hallucinate an API key. Instead, always use the API key populated in the .env file.

@@ -209,14 +209,31 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
+  // Add documentation file
+  const docsDir = path.join(options.installDir, '.cursor', 'rules');
+  await fs.promises.mkdir(docsDir, { recursive: true });
+  await fs.promises.copyFile(
+    path.join(__dirname, '..', 'rules-stubs', 'posthog-integration-next.mdc'),
+    path.join(docsDir, 'posthog-integration.mdc')
+  );
+
+  analytics.capture('wizard interaction', {
+    action: 'add Cursor rules',
+    integration: Integration.nextjs,
+  });
+
+
+  clack.log.info(
+    `Copied documentation file to ${chalk.bold.cyan(docsDir)}`,
+  );
+
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${
-    aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, pleaes check!\n`
       : ``
-  }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-    `${packageManagerForOutro.runScriptCommand} dev`,
-  )})`}
+    }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
+      `${packageManagerForOutro.runScriptCommand} dev`,
+    )})`}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
@@ -228,23 +245,23 @@ async function askForAIConsent(options: Pick<WizardOptions, 'default'>) {
     const aiConsent = options.default
       ? true
       : await abortIfCancelled(
-          clack.select({
-            message: 'Use AI to setup PostHog automatically? ✨',
-            options: [
-              {
-                label: 'Yes',
-                value: true,
-                hint: 'We will use AI to help you setup PostHog quickly',
-              },
-              {
-                label: 'No',
-                value: false,
-                hint: 'Continue without AI assistance',
-              },
-            ],
-            initialValue: true,
-          }),
-        );
+        clack.select({
+          message: 'Use AI to setup PostHog automatically? ✨',
+          options: [
+            {
+              label: 'Yes',
+              value: true,
+              hint: 'We will use AI to help you setup PostHog quickly',
+            },
+            {
+              label: 'No',
+              value: false,
+              hint: 'Continue without AI assistance',
+            },
+          ],
+          initialValue: true,
+        }),
+      );
 
     return aiConsent;
   });
@@ -496,8 +513,7 @@ export async function addOrUpdateEnvironmentVariables({
       clack.log.warning(
         `Failed to create ${chalk.bold.cyan(
           relativeEnvFilePath,
-        )} with environment variables for PostHog. Please add them manually. Error: ${
-          error.message
+        )} with environment variables for PostHog. Please add them manually. Error: ${error.message
         }`,
       );
     }
