@@ -209,23 +209,24 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  // Add documentation file
-  const docsDir = path.join(options.installDir, '.cursor', 'rules');
-  await fs.promises.mkdir(docsDir, { recursive: true });
-  await fs.promises.copyFile(
-    path.join(__dirname, '..', 'rules-stubs', 'posthog-integration-next.mdc'),
-    path.join(docsDir, 'posthog-integration.mdc')
-  );
+  // Add documentation file if in Cursor environment
+  if (process.env.CURSOR_TRACE_ID) {
+    const docsDir = path.join(options.installDir, '.cursor', 'rules');
+    await fs.promises.mkdir(docsDir, { recursive: true });
+    await fs.promises.copyFile(
+      path.join(__dirname, '..', 'rules-stubs', 'posthog-integration-next.mdc'),
+      path.join(docsDir, 'posthog-integration.mdc')
+    );
 
-  analytics.capture('wizard interaction', {
-    action: 'add Cursor rules',
-    integration: Integration.nextjs,
-  });
+    analytics.capture('wizard interaction', {
+      action: 'add Cursor rules',
+      integration: Integration.nextjs,
+    });
 
-
-  clack.log.info(
-    `Copied documentation file to ${chalk.bold.cyan(docsDir)}`,
-  );
+    clack.log.info(
+      `Copied documentation file to ${chalk.bold.cyan(docsDir)}`,
+    );
+  }
 
   clack.outro(`
 ${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
