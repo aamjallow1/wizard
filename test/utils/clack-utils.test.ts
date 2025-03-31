@@ -1,6 +1,4 @@
-import {
-  installPackage
-} from '../../src/utils/clack-utils';
+import { installPackage } from '../../src/utils/clack-utils';
 
 import * as ChildProcess from 'node:child_process';
 import type { PackageManager } from '../../src/utils/package-manager';
