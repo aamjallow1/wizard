@@ -5,6 +5,7 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
+  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -121,6 +122,10 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
   await runPrettierIfInstalled({
     installDir: options.installDir,
     integration: Integration.react,
+  });
+
+  await createPRFromNewBranch({
+    installDir: options.installDir,
   });
 
   clack.outro(`

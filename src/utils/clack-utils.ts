@@ -972,3 +972,158 @@ export async function askForCloudRegion(): Promise<CloudRegion> {
     return cloudRegion;
   });
 }
+
+export const PR_CONFIG = {
+  defaultBranchName: 'posthog-integration',
+  defaultTitle: 'Add PostHog Integration',
+  defaultBody: 'This PR adds the PostHog integration.',
+};
+
+async function getCurrentBranch(installDir: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    childProcess.exec(
+      `git rev-parse --abbrev-ref HEAD`,
+      { cwd: installDir },
+      (err, stdout, stderr) => {
+        if (err) {
+          reject(new Error(`Failed to detect current branch: ${stderr}`));
+        } else {
+          resolve(stdout.trim());
+        }
+      },
+    );
+  });
+}
+
+interface CreatePROptions {
+  title?: string;
+  body?: string;
+  installDir: string;
+}
+
+export async function createPRFromNewBranch({
+  title = PR_CONFIG.defaultTitle,
+  body = PR_CONFIG.defaultBody,
+  installDir,
+}: CreatePROptions): Promise<void> {
+  return traceStep('create-pr', async () => {
+    if (!isInGitRepo()) {
+      clack.log.warn('Not in a git repository. Cannot create a pull request.');
+      return;
+    }
+
+    let baseBranch: string;
+    try {
+      baseBranch = await getCurrentBranch(installDir);
+    } catch (error: any) {
+      clack.log.error(error.message);
+      return;
+    }
+
+    // if (baseBranch !== 'main') {
+    //   clack.log.info(
+    //     `Current branch is "${baseBranch}". Skipping PR creation since we're not on "main".`,
+    //   );
+    //   return;
+    // }
+
+    const newBranch = PR_CONFIG.defaultBranchName;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        childProcess.exec(
+          `git rev-parse --verify ${newBranch}`,
+          { cwd: installDir },
+          (err) => {
+            if (!err) {
+              reject(
+                new Error(
+                  `Branch '${newBranch}' already exists. Please delete or rename it before creating a new PR.`,
+                ),
+              );
+            } else {
+              resolve();
+            }
+          },
+        );
+      });
+    } catch (branchError: any) {
+      clack.log.error(branchError.message);
+      return;
+    }
+    try {
+      await new Promise<void>((resolve, reject) => {
+        childProcess.exec(
+          `git checkout -b ${newBranch}`,
+          { cwd: installDir },
+          (err, stdout, stderr) => {
+            if (err) {
+              reject(
+                new Error(`Failed to create branch '${newBranch}': ${stderr}`),
+              );
+            } else {
+              resolve();
+            }
+          },
+        );
+      });
+    } catch (createBranchError: any) {
+      clack.log.error(createBranchError.message);
+      return;
+    }
+
+    // Stage and commit changes
+    const commitSpinner = clack.spinner();
+    commitSpinner.start('Staging and committing changes...');
+    try {
+      await new Promise<void>((resolve, reject) => {
+        childProcess.exec(
+          `git add . && git commit -m "${title}"`,
+          { cwd: installDir },
+          (err, stdout, stderr) => {
+            if (err) {
+              reject(new Error(`Failed to commit changes: ${stderr}`));
+            } else {
+              resolve();
+            }
+          },
+        );
+      });
+    } catch (commitError: any) {
+      commitSpinner.stop('Failed to commit changes.');
+      clack.log.warn(commitError.message);
+      return;
+    }
+    commitSpinner.stop('Changes committed successfully.');
+
+    const prSpinner = clack.spinner();
+    prSpinner.start(
+      `Creating a PR on branch '${newBranch}' with base '${baseBranch}'...`,
+    );
+    try {
+      await new Promise<void>((resolve, reject) => {
+        childProcess.exec(
+          `gh pr create --base ${baseBranch} --head ${newBranch} --title "${title}" --body "${body}"`,
+          { cwd: installDir },
+          (err, stdout, stderr) => {
+            if (err) {
+              reject(new Error(`Failed to create PR: ${stderr}`));
+            } else {
+              resolve();
+            }
+          },
+        );
+      });
+    } catch (prError: any) {
+      prSpinner.stop(`Failed to create PR on branch '${newBranch}'.`);
+      clack.log.warn(prError.message);
+      return;
+    }
+    prSpinner.stop(`Successfully created a PR '${newBranch}'.`);
+
+    analytics.capture('wizard interaction', {
+      action: 'created pr',
+      branch: newBranch,
+      base_branch: baseBranch,
+    });
+  });
+}
