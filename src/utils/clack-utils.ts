@@ -99,11 +99,11 @@ export async function confirmContinueIfNoOrDirtyGitRepo(
       const continueWithoutGit = options.default
         ? true
         : await abortIfCancelled(
-            clack.confirm({
-              message:
-                'You are not inside a git repository. The wizard will create and update files. Do you want to continue anyway?',
-            }),
-          );
+          clack.confirm({
+            message:
+              'You are not inside a git repository. The wizard will create and update files. Do you want to continue anyway?',
+          }),
+        );
 
       analytics.setTag('continue-without-git', continueWithoutGit);
 
@@ -126,10 +126,10 @@ The wizard will create and update files.`,
       const continueWithDirtyRepo = options.default
         ? true
         : await abortIfCancelled(
-            clack.confirm({
-              message: 'Do you want to continue anyway?',
-            }),
-          );
+          clack.confirm({
+            message: 'Do you want to continue anyway?',
+          }),
+        );
 
       analytics.setTag('continue-with-dirty-repo', continueWithDirtyRepo);
 
@@ -227,7 +227,7 @@ export async function confirmContinueIfPackageVersionNotSupported({
 
     clack.note(
       note ??
-        `Please upgrade to ${acceptableVersions} if you wish to use the PostHog Wizard.`,
+      `Please upgrade to ${acceptableVersions} if you wish to use the PostHog Wizard.`,
     );
     const continueWithUnsupportedVersion = await abortIfCancelled(
       clack.confirm({
@@ -304,8 +304,7 @@ export async function installPackage({
     try {
       await new Promise<void>((resolve, reject) => {
         childProcess.exec(
-          `${pkgManager.installCommand} ${packageName} ${pkgManager.flags} ${
-            forceInstall ? pkgManager.forceInstallFlag : ''
+          `${pkgManager.installCommand} ${packageName} ${pkgManager.flags} ${forceInstall ? pkgManager.forceInstallFlag : ''
           }`,
           { cwd: installDir },
           (err, stdout, stderr) => {
@@ -579,8 +578,8 @@ ${chalk.cyan(ISSUES_URL)}`);
 
     clack.log
       .info(`In the meantime, we'll add a dummy project API key (${chalk.cyan(
-      `"${DUMMY_PROJECT_API_KEY}"`,
-    )}) for you to replace later.
+        `"${DUMMY_PROJECT_API_KEY}"`,
+      )}) for you to replace later.
 You can find your Project API key here:
 ${chalk.cyan(`${cloudUrl}/settings/project#variables`)}`);
   }
@@ -753,8 +752,7 @@ export async function showCopyPasteInstructions(
   hint?: string,
 ): Promise<void> {
   clack.log.step(
-    `Add the following code to your ${chalk.cyan(basename(filename))} file:${
-      hint ? chalk.dim(` (${chalk.dim(hint)})`) : ''
+    `Add the following code to your ${chalk.cyan(basename(filename))} file:${hint ? chalk.dim(` (${chalk.dim(hint)})`) : ''
     }`,
   );
 
@@ -929,23 +927,23 @@ export async function askForAIConsent(options: Pick<WizardOptions, 'default'>) {
     const aiConsent = options.default
       ? true
       : await abortIfCancelled(
-          clack.select({
-            message: 'Use AI to setup PostHog automatically? ✨',
-            options: [
-              {
-                label: 'Yes',
-                value: true,
-                hint: 'We will use AI to help you setup PostHog quickly',
-              },
-              {
-                label: 'No',
-                value: false,
-                hint: 'Continue without AI assistance',
-              },
-            ],
-            initialValue: true,
-          }),
-        );
+        clack.select({
+          message: 'Use AI to setup PostHog automatically? ✨',
+          options: [
+            {
+              label: 'Yes',
+              value: true,
+              hint: 'We will use AI to help you setup PostHog quickly',
+            },
+            {
+              label: 'No',
+              value: false,
+              hint: 'Continue without AI assistance',
+            },
+          ],
+          initialValue: true,
+        }),
+      );
 
     return aiConsent;
   });
@@ -1095,30 +1093,65 @@ export async function createPRFromNewBranch({
     }
     commitSpinner.stop('Changes committed successfully.');
 
-    const prSpinner = clack.spinner();
-    prSpinner.start(
-      `Creating a PR on branch '${newBranch}' with base '${baseBranch}'...`,
-    );
+    // Push the branch to remote
+    const pushSpinner = clack.spinner();
+    pushSpinner.start('Pushing branch to remote...');
     try {
       await new Promise<void>((resolve, reject) => {
         childProcess.exec(
-          `gh pr create --base ${baseBranch} --head ${newBranch} --title "${title}" --body "${body}"`,
+          `git push -u origin ${newBranch}`,
           { cwd: installDir },
-          (err, stdout, stderr) => {
+          (err, _stdout, stderr) => {
             if (err) {
-              reject(new Error(`Failed to create PR: ${stderr}`));
+              reject(new Error(`Failed to push branch: ${stderr}`));
             } else {
               resolve();
             }
           },
         );
       });
+    } catch (pushError: any) {
+      pushSpinner.stop('Failed to push branch.');
+      clack.log.warn(pushError.message);
+      return;
+    }
+    pushSpinner.stop('Branch pushed successfully.');
+
+    const prSpinner = clack.spinner();
+    prSpinner.start(
+      `Creating a PR on branch '${newBranch}' with base '${baseBranch}'...`,
+    );
+    try {
+      let prUrl = '';
+      await new Promise<void>((resolve, reject) => {
+        childProcess.exec(
+          `gh pr create --base ${baseBranch} --head ${newBranch} --title "${title}" --body "${body}" --json url`,
+          { cwd: installDir },
+          (err, stdout, stderr) => {
+            if (err) {
+              reject(new Error(`Failed to create PR: ${stderr}`));
+            } else {
+              try {
+                const result = JSON.parse(stdout);
+                prUrl = result.url;
+                resolve();
+              } catch (parseError) {
+                reject(new Error('Failed to parse PR URL from response'));
+              }
+            }
+          },
+        );
+      });
+      prSpinner.stop(
+        `Successfully created PR! 🎉\n\nReview your changes here: ${chalk.cyan(
+          prUrl,
+        )}`,
+      );
     } catch (prError: any) {
       prSpinner.stop(`Failed to create PR on branch '${newBranch}'.`);
       clack.log.warn(prError.message);
       return;
     }
-    prSpinner.stop(`Successfully created a PR '${newBranch}'.`);
 
     analytics.capture('wizard interaction', {
       action: 'created pr',
