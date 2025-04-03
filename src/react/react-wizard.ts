@@ -19,7 +19,7 @@ import clack from '../utils/clack';
 import { Integration, ISSUES_URL } from '../lib/constants';
 import { getReactDocumentation } from './docs';
 import { analytics } from '../utils/analytics';
-import { addOrUpdateEnvironmentVariables } from '../utils/environment';
+import { addOrUpdateEnvironmentVariables, detectEnvVarPrefix } from '../utils/environment';
 import {
   generateFileChangesForIntegration,
   getFilesToChange,
@@ -27,7 +27,6 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
-import fg from 'fast-glob';
 
 export async function runReactWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -128,82 +127,14 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${
-    aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, pleaes check!\n`
       : ``
-  }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-    `${packageManagerForOutro.runScriptCommand} dev`,
-  )})`}
+    }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
+      `${packageManagerForOutro.runScriptCommand} dev`,
+    )})`}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
   await analytics.shutdown('success');
-}
-
-export async function detectEnvVarPrefix(
-  options: WizardOptions,
-): Promise<string> {
-  const packageJson = await getPackageDotJson(options);
-
-  const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-  const has = (name: string) => name in deps;
-  const hasAnyFile = async (patterns: string[]) => {
-    const matches = await fg(patterns, {
-      cwd: options.installDir,
-      absolute: false,
-      onlyFiles: true,
-      ignore: ['**/node_modules/**'],
-    });
-    return matches.length > 0;
-  };
-
-  // --- Next.js - Note: this has it's own wizard, but we keep it here just in case.
-  if (has('next') || (await hasAnyFile(['**/next.config.{js,ts,mjs,cjs}']))) {
-    return 'NEXT_PUBLIC_';
-  }
-
-  // --- Create React App
-  if (
-    has('react-scripts') ||
-    has('create-react-app') ||
-    (await hasAnyFile(['**/config-overrides.js']))
-  ) {
-    return 'REACT_APP_';
-  }
-
-  // --- Vite (vanilla, TanStack, Solid, etc.)
-  // Note: Vite does not need PUBLIC_ but we use it to follow the docs, to improve the chances of an LLM getting it right.
-  if (has('vite') || (await hasAnyFile(['**/vite.config.{js,ts,mjs,cjs}']))) {
-    return 'VITE_PUBLIC_';
-  }
-
-  // --- SvelteKit
-  if (
-    has('@sveltejs/kit') ||
-    (await hasAnyFile(['**/svelte.config.{js,ts}']))
-  ) {
-    return 'PUBLIC_';
-  }
-
-  // --- TanStack Start (uses Vite)
-  if (
-    has('@tanstack/start') ||
-    (await hasAnyFile(['**/tanstack.config.{js,ts}']))
-  ) {
-    return 'VITE_PUBLIC_';
-  }
-
-  // --- SolidStart (uses Vite)
-  if (has('solid-start') || (await hasAnyFile(['**/solid.config.{js,ts}']))) {
-    return 'VITE_PUBLIC_';
-  }
-
-  // --- Astro
-  if (has('astro') || (await hasAnyFile(['**/astro.config.{js,ts,mjs}']))) {
-    return 'PUBLIC_';
-  }
-
-  // We default to Vite if we can't detect a specific framework, since it's the most commonly used.
-  return 'VITE_PUBLIC_';
 }
