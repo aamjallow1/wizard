@@ -9,8 +9,9 @@ export const getReactDocumentation = ({
 }) => {
   return `
 ==============================
-FILE: {index / App}.${language === 'typescript' ? 'tsx' : 'jsx'
-    } (wherever the root of the app is)
+FILE: {index / App}.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  } (wherever the root of the app is)
 LOCATION: Wherever the root of the app is
 ==============================
 Changes:
