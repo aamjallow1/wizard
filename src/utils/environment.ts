@@ -101,7 +101,8 @@ export async function addOrUpdateEnvironmentVariables({
       clack.log.warning(
         `Failed to create ${chalk.bold.cyan(
           relativeEnvFilePath,
-        )} with environment variables. Please add them manually. Error: ${error.message
+        )} with environment variables. Please add them manually. Error: ${
+          error.message
         }`,
       );
     }
@@ -166,7 +167,6 @@ export async function addOrUpdateEnvironmentVariables({
     integration,
   });
 }
-
 
 export async function detectEnvVarPrefix(
   options: WizardOptions,

@@ -19,7 +19,10 @@ import clack from '../utils/clack';
 import { Integration, ISSUES_URL } from '../lib/constants';
 import { getReactDocumentation } from './docs';
 import { analytics } from '../utils/analytics';
-import { addOrUpdateEnvironmentVariables, detectEnvVarPrefix } from '../utils/environment';
+import {
+  addOrUpdateEnvironmentVariables,
+  detectEnvVarPrefix,
+} from '../utils/environment';
 import {
   generateFileChangesForIntegration,
   getFilesToChange,
@@ -127,12 +130,13 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${
+    aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, pleaes check!\n`
       : ``
-    }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-      `${packageManagerForOutro.runScriptCommand} dev`,
-    )})`}
+  }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
+    `${packageManagerForOutro.runScriptCommand} dev`,
+  )})`}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
