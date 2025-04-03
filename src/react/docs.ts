@@ -1,15 +1,16 @@
 export const getReactDocumentation = ({
   host,
   language,
+  envVarPrefix,
 }: {
   host: string;
   language: 'typescript' | 'javascript';
+  envVarPrefix: string;
 }) => {
   return `
 ==============================
-FILE: {index / App}.${
-    language === 'typescript' ? 'tsx' : 'jsx'
-  } (wherever the root of the app is)
+FILE: {index / App}.${language === 'typescript' ? 'tsx' : 'jsx'
+    } (wherever the root of the app is)
 LOCATION: Wherever the root of the app is
 ==============================
 Changes:
@@ -28,7 +29,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <PostHogProvider
-      apiKey={process.env.REACT_APP_PUBLIC_POSTHOG_KEY}
+      apiKey={process.env.${envVarPrefix}POSTHOG_KEY}
       options={{
   api_host: ${host},
 }}
