@@ -213,9 +213,25 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   if (process.env.CURSOR_TRACE_ID) {
     const docsDir = path.join(options.installDir, '.cursor', 'rules');
     await fs.promises.mkdir(docsDir, { recursive: true });
-    await fs.promises.copyFile(
-      path.join(__dirname, '..', 'rules-stubs', 'posthog-integration-next.mdc'),
-      path.join(docsDir, 'posthog-integration.mdc')
+
+    // Read both rule files
+    const nextRules = await fs.promises.readFile(
+      path.join(__dirname, 'next-rules.mdc'),
+      'utf8'
+    );
+    const universalRules = await fs.promises.readFile(
+      path.join(__dirname, '..', 'rules-stubs', 'universal.md'),
+      'utf8'
+    );
+
+    // Replace {universal} placeholder with universal rules content
+    const combinedRules = nextRules.replace('{universal}', universalRules);
+
+    // Write the combined rules
+    await fs.promises.writeFile(
+      path.join(docsDir, 'posthog-integration.mdc'),
+      combinedRules,
+      'utf8'
     );
 
     analytics.capture('wizard interaction', {
