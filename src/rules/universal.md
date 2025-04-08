@@ -6,7 +6,7 @@ A given feature flag should be used in as few places as possible. Do not increas
 
 If a job requires creating new feature flag names, make them as clear and descriptive as possible.
 
-If using JavaScript, store flag names as strings to an object declared as a constant, to simulate an enum. If using TypeScript, use an enum. Use a consistent naming convention for this storage. enum members should be written UPPERCASE_WITH_UNDERSCORE.
+If using TypeScript, use an enum to store flag names. If using JavaScript, store flag names as strings to an object declared as a constant, to simulate an enum. Use a consistent naming convention for this storage. enum/const object members should be written UPPERCASE_WITH_UNDERSCORE.
 
 Gate flag-dependent code on a check that verifies the flag's values are valid and expected.
 
