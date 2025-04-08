@@ -145,12 +145,11 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  await installRules(path.join(__dirname, 'next-rules.md'), options.installDir);
+  await installRules('next-rules.md', options.installDir);
 
-  clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
-      ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
-      : ``
+  clack.outro(`${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+    ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
+    : ``
     }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
       `${packageManagerForOutro.runScriptCommand} dev`,
     )})`}
@@ -175,3 +174,4 @@ function getInstallationDocumentation({
 
   return getNextjsAppRouterDocs({ host, language });
 }
+

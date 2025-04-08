@@ -1,14 +1,7 @@
 ---
-description: 
-globs: 
-alwaysApply: false
----
----
 description: apply when interacting with PostHog/analytics tasks
 globs: 
 alwaysApply: true
 ---
 
 {universal}
-
-
