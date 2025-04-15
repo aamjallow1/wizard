@@ -34,7 +34,6 @@ import {
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
 import { installRules } from '../rules/install-rules';
-import path from 'path';
 
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -145,7 +144,11 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  await installRules('next-rules.md', options.installDir);
+  await installRules({
+    rulesName: 'next-rules.md',
+    installDir: options.installDir,
+    integration: Integration.nextjs,
+  });
 
   clack.outro(`${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
     ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
@@ -174,4 +177,3 @@ function getInstallationDocumentation({
 
   return getNextjsAppRouterDocs({ host, language });
 }
-

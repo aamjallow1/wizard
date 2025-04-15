@@ -130,7 +130,11 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     integration: Integration.react,
   });
 
-  await installRules('react-rules.md', options.installDir);
+  await installRules({
+    installDir: options.installDir,
+    rulesName: 'react-rules.md',
+    integration: Integration.react,
+  });
 
   clack.outro(`
 ${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
