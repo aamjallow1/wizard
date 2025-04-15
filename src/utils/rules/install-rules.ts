@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import chalk from 'chalk';
 import path from 'path';
-import { Integration } from '../lib/constants';
-import { analytics } from '../utils/analytics';
-import clack from '../utils/clack';
-import { traceStep } from '../telemetry';
+import { Integration } from '../../lib/constants';
+import { analytics } from '../analytics';
+import clack from '../clack';
+import { traceStep } from '../../telemetry';
 
 type InstallRulesOptions = {
   installDir: string;
