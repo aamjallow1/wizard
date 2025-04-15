@@ -18,6 +18,7 @@ jest.mock('../../../src/utils/analytics', () => ({
   analytics: {
     capture: jest.fn(),
     setTag: jest.fn(),
+    shutdown: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -25,6 +26,9 @@ jest.mock('../../../src/utils/clack', () => ({
   log: {
     info: jest.fn(),
   },
+  select: jest.fn().mockResolvedValue(true),
+  isCancel: jest.fn((value: unknown): value is symbol => false),
+  cancel: jest.fn(),
 }));
 
 describe('addEditorRules', () => {
@@ -41,6 +45,9 @@ describe('addEditorRules', () => {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const captureMock = analytics.capture as jest.Mock;
   const infoMock = clack.log.info as jest.Mock;
+  const selectMock = clack.select as jest.Mock;
+  const isCancelMock = clack.isCancel as unknown as jest.Mock;
+  const cancelMock = clack.cancel as jest.Mock;
 
   beforeEach(() => {
     // Reset all mocks before each test
@@ -49,6 +56,11 @@ describe('addEditorRules', () => {
     (fs.promises.mkdir as jest.Mock).mockReset();
     (fs.promises.readFile as jest.Mock).mockReset();
     (fs.promises.writeFile as jest.Mock).mockReset();
+    selectMock.mockReset();
+    selectMock.mockResolvedValue(true); // Default to "Yes" for the prompt
+    isCancelMock.mockReset();
+    isCancelMock.mockReturnValue(false);
+    cancelMock.mockReset();
     process.env = { ...originalEnv };
   });
 
@@ -241,5 +253,18 @@ A given feature flag should be used in as few places as possible. Do not increas
     expect(infoMock).toHaveBeenCalledWith(
       expect.stringContaining(path.join('/test/dir', '.cursor', 'rules')),
     );
+  });
+
+  it('should not install rules when user declines', async () => {
+    process.env.CURSOR_TRACE_ID = 'test-trace-id';
+    selectMock.mockResolvedValue(false);
+
+    await addEditorRules(mockOptions);
+
+    expect(mkdirMock).not.toHaveBeenCalled();
+    expect(readFileMock).not.toHaveBeenCalled();
+    expect(writeFileMock).not.toHaveBeenCalled();
+    expect(captureMock).not.toHaveBeenCalled();
+    expect(infoMock).not.toHaveBeenCalled();
   });
 });
