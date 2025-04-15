@@ -5,20 +5,46 @@ import { Integration } from '../../lib/constants';
 import { analytics } from '../analytics';
 import clack from '../clack';
 import { traceStep } from '../../telemetry';
+import { abortIfCancelled } from '../clack-utils';
 
 type AddEditorRulesOptions = {
   installDir: string;
   rulesName: string;
   integration: Integration;
+  default?: boolean;
 };
 
 export const addEditorRules = async ({
   installDir,
   rulesName,
   integration,
+  default: defaultAddEditorRules,
 }: AddEditorRulesOptions) => {
   // Add rules file if in Cursor environment
   if (process.env.CURSOR_TRACE_ID) {
+    const addEditorRules: boolean = defaultAddEditorRules
+      ? true
+      : await abortIfCancelled(
+          clack.select({
+            message:
+              'Would you like to have PostHog added to your Cursor rules?',
+            options: [
+              {
+                label: 'Yes, please!',
+                value: true,
+              },
+              {
+                label: 'No, thanks',
+                value: false,
+              },
+            ],
+          }),
+        );
+
+    if (!addEditorRules) {
+      return;
+    }
+
     return traceStep('add-editor-rules', async () => {
       const docsDir = path.join(installDir, '.cursor', 'rules');
 
@@ -50,7 +76,7 @@ export const addEditorRules = async ({
         integration,
       });
 
-      clack.log.info(`Added editor rules to ${chalk.bold.cyan(docsDir)}`);
+      clack.log.info(`Added Cursor rules to ${chalk.bold.cyan(docsDir)}`);
     });
   }
 };

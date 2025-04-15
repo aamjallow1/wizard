@@ -134,6 +134,7 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     installDir: options.installDir,
     rulesName: 'react-rules.md',
     integration: Integration.react,
+    default: options.default,
   });
 
   clack.outro(`

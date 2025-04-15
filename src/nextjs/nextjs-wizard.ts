@@ -148,6 +148,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     rulesName: 'next-rules.md',
     installDir: options.installDir,
     integration: Integration.nextjs,
+    default: options.default,
   });
 
   clack.outro(`${chalk.green('Successfully installed PostHog!')} ${`\n\n${
