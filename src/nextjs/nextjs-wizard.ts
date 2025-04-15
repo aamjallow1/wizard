@@ -150,12 +150,13 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  clack.outro(`${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+  clack.outro(`${chalk.green('Successfully installed PostHog!')} ${`\n\n${
+    aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-    }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-      `${packageManagerForOutro.runScriptCommand} dev`,
-    )})`}
+  }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
+    `${packageManagerForOutro.runScriptCommand} dev`,
+  )})`}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 

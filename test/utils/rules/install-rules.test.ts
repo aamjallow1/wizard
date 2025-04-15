@@ -39,8 +39,8 @@ describe('installRules', () => {
   const readFileMock = fs.promises.readFile as jest.Mock;
   const writeFileMock = fs.promises.writeFile as jest.Mock;
   // eslint-disable-next-line @typescript-eslint/unbound-method
-  const captureMock = (analytics.capture as jest.Mock);
-  const infoMock = (clack.log.info as jest.Mock);
+  const captureMock = analytics.capture as jest.Mock;
+  const infoMock = clack.log.info as jest.Mock;
 
   beforeEach(() => {
     // Reset all mocks before each test
@@ -73,7 +73,8 @@ describe('installRules', () => {
 
     const mockFrameworkRules = 'framework rules {universal} content';
     const mockUniversalRules = 'universal rules content';
-    const expectedCombinedRules = 'framework rules universal rules content content';
+    const expectedCombinedRules =
+      'framework rules universal rules content content';
 
     (fs.promises.readFile as jest.Mock)
       .mockImplementationOnce(() => Promise.resolve(mockFrameworkRules))
@@ -84,24 +85,30 @@ describe('installRules', () => {
     // Check if directory was created
     expect(mkdirMock).toHaveBeenCalledWith(
       path.join('/test/dir', '.cursor', 'rules'),
-      { recursive: true }
+      { recursive: true },
     );
 
     // Check if correct files were read
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join(path.dirname(require.resolve('../../../src/utils/rules/install-rules')), mockOptions.rulesName),
-      'utf8'
+      path.join(
+        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        mockOptions.rulesName,
+      ),
+      'utf8',
     );
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join(path.dirname(require.resolve('../../../src/utils/rules/install-rules')), 'universal.md'),
-      'utf8'
+      path.join(
+        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        'universal.md',
+      ),
+      'utf8',
     );
 
     // Check if combined rules were written correctly
     expect(writeFileMock).toHaveBeenCalledWith(
       path.join('/test/dir', '.cursor', 'rules', 'posthog-integration.mdc'),
       expectedCombinedRules,
-      'utf8'
+      'utf8',
     );
 
     // Check if analytics were captured
@@ -112,7 +119,7 @@ describe('installRules', () => {
 
     // Check if success message was logged
     expect(infoMock).toHaveBeenCalledWith(
-      expect.stringContaining(path.join('/test/dir', '.cursor', 'rules'))
+      expect.stringContaining(path.join('/test/dir', '.cursor', 'rules')),
     );
   });
 
@@ -190,24 +197,30 @@ A given feature flag should be used in as few places as possible. Do not increas
     // Check if directory was created
     expect(mkdirMock).toHaveBeenCalledWith(
       path.join('/test/dir', '.cursor', 'rules'),
-      { recursive: true }
+      { recursive: true },
     );
 
     // Check if correct files were read
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join(path.dirname(require.resolve('../../../src/utils/rules/install-rules')), mockOptions.rulesName),
-      'utf8'
+      path.join(
+        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        mockOptions.rulesName,
+      ),
+      'utf8',
     );
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join(path.dirname(require.resolve('../../../src/utils/rules/install-rules')), 'universal.md'),
-      'utf8'
+      path.join(
+        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        'universal.md',
+      ),
+      'utf8',
     );
 
     // Check if combined rules were written correctly with proper formatting preserved
     expect(writeFileMock).toHaveBeenCalledWith(
       path.join('/test/dir', '.cursor', 'rules', 'posthog-integration.mdc'),
       expectedCombinedRules,
-      'utf8'
+      'utf8',
     );
 
     // Check if analytics were captured
@@ -218,7 +231,7 @@ A given feature flag should be used in as few places as possible. Do not increas
 
     // Check if success message was logged
     expect(infoMock).toHaveBeenCalledWith(
-      expect.stringContaining(path.join('/test/dir', '.cursor', 'rules'))
+      expect.stringContaining(path.join('/test/dir', '.cursor', 'rules')),
     );
   });
-}); 
+});
