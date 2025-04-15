@@ -6,20 +6,20 @@ import { analytics } from '../analytics';
 import clack from '../clack';
 import { traceStep } from '../../telemetry';
 
-type InstallRulesOptions = {
+type AddEditorRulesOptions = {
   installDir: string;
   rulesName: string;
   integration: Integration;
 };
 
-export const installRules = async ({
+export const addEditorRules = async ({
   installDir,
   rulesName,
   integration,
-}: InstallRulesOptions) => {
+}: AddEditorRulesOptions) => {
   // Add rules file if in Cursor environment
   if (process.env.CURSOR_TRACE_ID) {
-    return traceStep('install-rules', async () => {
+    return traceStep('add-editor-rules', async () => {
       const docsDir = path.join(installDir, '.cursor', 'rules');
 
       await fs.promises.mkdir(docsDir, { recursive: true });
@@ -46,11 +46,11 @@ export const installRules = async ({
       await fs.promises.writeFile(targetPath, combinedRules, 'utf8');
 
       analytics.capture('wizard interaction', {
-        action: 'added cursor rules',
+        action: 'added editor rules',
         integration,
       });
 
-      clack.log.info(`Added Cursor rules to ${chalk.bold.cyan(docsDir)}`);
+      clack.log.info(`Added editor rules to ${chalk.bold.cyan(docsDir)}`);
     });
   }
 };

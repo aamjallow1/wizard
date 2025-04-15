@@ -30,7 +30,7 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
-import { installRules } from '../utils/rules/install-rules';
+import { addEditorRules } from '../utils/rules/add-editor-rules';
 
 export async function runReactWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -130,7 +130,7 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     integration: Integration.react,
   });
 
-  await installRules({
+  await addEditorRules({
     installDir: options.installDir,
     rulesName: 'react-rules.md',
     integration: Integration.react,

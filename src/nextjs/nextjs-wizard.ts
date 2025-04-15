@@ -33,7 +33,7 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
-import { installRules } from '../utils/rules/install-rules';
+import { addEditorRules } from '../utils/rules/add-editor-rules';
 
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -144,7 +144,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  await installRules({
+  await addEditorRules({
     rulesName: 'next-rules.md',
     installDir: options.installDir,
     integration: Integration.nextjs,

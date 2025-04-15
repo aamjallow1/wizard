@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import path from 'path';
-import { installRules } from '../../../src/utils/rules/install-rules';
+import { addEditorRules } from '../../../src/utils/rules/add-editor-rules';
 import { analytics } from '../../../src/utils/analytics';
 import clack from '../../../src/utils/clack';
 import { Integration } from '../../../src/lib/constants';
@@ -27,7 +27,7 @@ jest.mock('../../../src/utils/clack', () => ({
   },
 }));
 
-describe('installRules', () => {
+describe('addEditorRules', () => {
   const mockOptions = {
     installDir: '/test/dir',
     rulesName: 'test-rules.md',
@@ -59,7 +59,7 @@ describe('installRules', () => {
   it('should not install rules when CURSOR_TRACE_ID is not set', async () => {
     delete process.env.CURSOR_TRACE_ID;
 
-    await installRules(mockOptions);
+    await addEditorRules(mockOptions);
 
     expect(mkdirMock).not.toHaveBeenCalled();
     expect(readFileMock).not.toHaveBeenCalled();
@@ -80,7 +80,7 @@ describe('installRules', () => {
       .mockImplementationOnce(() => Promise.resolve(mockFrameworkRules))
       .mockImplementationOnce(() => Promise.resolve(mockUniversalRules));
 
-    await installRules(mockOptions);
+    await addEditorRules(mockOptions);
 
     // Check if directory was created
     expect(mkdirMock).toHaveBeenCalledWith(
@@ -91,14 +91,18 @@ describe('installRules', () => {
     // Check if correct files were read
     expect(readFileMock).toHaveBeenCalledWith(
       path.join(
-        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        path.dirname(
+          require.resolve('../../../src/utils/rules/add-editor-rules'),
+        ),
         mockOptions.rulesName,
       ),
       'utf8',
     );
     expect(readFileMock).toHaveBeenCalledWith(
       path.join(
-        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        path.dirname(
+          require.resolve('../../../src/utils/rules/add-editor-rules'),
+        ),
         'universal.md',
       ),
       'utf8',
@@ -113,7 +117,7 @@ describe('installRules', () => {
 
     // Check if analytics were captured
     expect(captureMock).toHaveBeenCalledWith('wizard interaction', {
-      action: 'added cursor rules',
+      action: 'added editor rules',
       integration: mockOptions.integration,
     });
 
@@ -130,7 +134,7 @@ describe('installRules', () => {
     // Mock readFile to throw an error
     (fs.promises.readFile as jest.Mock).mockRejectedValue(mockError);
 
-    await expect(installRules(mockOptions)).rejects.toThrow(mockError);
+    await expect(addEditorRules(mockOptions)).rejects.toThrow(mockError);
 
     expect(writeFileMock).not.toHaveBeenCalled();
     expect(captureMock).not.toHaveBeenCalled();
@@ -144,7 +148,7 @@ describe('installRules', () => {
     // Mock mkdir to throw an error
     (fs.promises.mkdir as jest.Mock).mockRejectedValue(mockError);
 
-    await expect(installRules(mockOptions)).rejects.toThrow(mockError);
+    await expect(addEditorRules(mockOptions)).rejects.toThrow(mockError);
 
     expect(writeFileMock).not.toHaveBeenCalled();
     expect(captureMock).not.toHaveBeenCalled();
@@ -192,7 +196,7 @@ A given feature flag should be used in as few places as possible. Do not increas
       .mockImplementationOnce(() => Promise.resolve(mockFrameworkRules))
       .mockImplementationOnce(() => Promise.resolve(mockUniversalRules));
 
-    await installRules(mockOptions);
+    await addEditorRules(mockOptions);
 
     // Check if directory was created
     expect(mkdirMock).toHaveBeenCalledWith(
@@ -203,14 +207,18 @@ A given feature flag should be used in as few places as possible. Do not increas
     // Check if correct files were read
     expect(readFileMock).toHaveBeenCalledWith(
       path.join(
-        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        path.dirname(
+          require.resolve('../../../src/utils/rules/add-editor-rules'),
+        ),
         mockOptions.rulesName,
       ),
       'utf8',
     );
     expect(readFileMock).toHaveBeenCalledWith(
       path.join(
-        path.dirname(require.resolve('../../../src/utils/rules/install-rules')),
+        path.dirname(
+          require.resolve('../../../src/utils/rules/add-editor-rules'),
+        ),
         'universal.md',
       ),
       'utf8',
@@ -225,7 +233,7 @@ A given feature flag should be used in as few places as possible. Do not increas
 
     // Check if analytics were captured
     expect(captureMock).toHaveBeenCalledWith('wizard interaction', {
-      action: 'added cursor rules',
+      action: 'added editor rules',
       integration: mockOptions.integration,
     });
 
