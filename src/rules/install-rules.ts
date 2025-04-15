@@ -36,7 +36,10 @@ export const installRules = async ({
       );
 
       // Replace {universal} placeholder with universal rules content
-      const combinedRules = frameworkRules.replace('{universal}', universalRules);
+      const combinedRules = frameworkRules.replace(
+        '{universal}',
+        universalRules,
+      );
       const targetPath = path.join(docsDir, 'posthog-integration.mdc');
 
       // Write the combined rules
