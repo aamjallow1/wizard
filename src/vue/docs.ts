@@ -3,14 +3,14 @@ export const getVueDocumentation = ({
   language,
   envVarPrefix,
 }: {
-  host: string
-  language: 'typescript' | 'javascript'
-  envVarPrefix: string
+  host: string;
+  language: 'typescript' | 'javascript';
+  envVarPrefix: string;
 }) => {
   const apiKeyText =
     envVarPrefix === 'VITE_PUBLIC_'
       ? 'import.meta.env.VITE_PUBLIC_POSTHOG_KEY'
-      : `process.env.${envVarPrefix}POSTHOG_KEY`
+      : `process.env.${envVarPrefix}POSTHOG_KEY`;
 
   return `
 ==============================
@@ -30,10 +30,11 @@ export default {
     posthog.init(${apiKeyText}, {
       api_host: '${host}',
       capture_pageview: false,
-      debug: ${envVarPrefix === 'VITE_PUBLIC_'
-      ? 'import.meta.env.MODE === "development"'
-      : 'process.env.NODE_ENV === "development"'
-    },
+      debug: ${
+        envVarPrefix === 'VITE_PUBLIC_'
+          ? 'import.meta.env.MODE === "development"'
+          : 'process.env.NODE_ENV === "development"'
+      },
     })
 
     app.config.globalProperties.$posthog = posthog
@@ -58,5 +59,5 @@ const app = createApp(App)
 app.use(posthogPlugin)
 app.mount('#app')
 --------------------------------------------------
-`
-}
+`;
+};
