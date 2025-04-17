@@ -1,6 +1,7 @@
 export enum Integration {
   nextjs = 'nextjs',
   react = 'react',
+  vue = 'vue',
 }
 
 export function getIntegrationDescription(type: string): string {
@@ -9,6 +10,8 @@ export function getIntegrationDescription(type: string): string {
       return 'Next.js';
     case Integration.react:
       return 'React';
+    case Integration.vue:
+      return 'Vue';
     default:
       throw new Error(`Unknown integration ${type}`);
   }

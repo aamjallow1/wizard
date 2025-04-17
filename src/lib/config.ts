@@ -49,9 +49,21 @@ export const INTEGRATION_CONFIG = {
     generateFilesRules: '',
     filterFilesRules: '',
   },
+  [Integration.vue]: {
+    name: 'Vue',
+    filterPatterns: ['**/*.{ts,tsx,js,jsx}'],
+    ignorePatterns: ['node_modules', 'dist', 'build', 'public', 'static'],
+    detect: async (options) => {
+      const packageJson = await getPackageDotJson(options);
+      return hasPackageInstalled('vue', packageJson);
+    },
+    generateFilesRules: '',
+    filterFilesRules: '',
+  },
 } as const satisfies Record<Integration, IntegrationConfig>;
 
 export const INTEGRATION_ORDER = [
   Integration.nextjs,
   Integration.react,
+  Integration.vue,
 ] as const;
