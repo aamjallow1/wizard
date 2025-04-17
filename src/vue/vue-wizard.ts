@@ -41,7 +41,7 @@ export async function runVueWizard(options: WizardOptions): Promise<void> {
 
   if (!aiConsent) {
     await abort(
-      'The Vue wizard requires AI to get setup right now. Please view the docs to setup Vue manually instead: https://posthog.com/docs/libraries/vue',
+      'The Vue wizard requires AI to get setup right now. Please view the docs to setup Vue manually instead: https://posthog.com/docs/libraries/vue-js',
       0,
     );
   }
@@ -60,7 +60,7 @@ export async function runVueWizard(options: WizardOptions): Promise<void> {
 
   if (vueVersion && Number(vueVersion) < 3) {
     await abort(
-      'The Vue wizard requires Vue 3. Please refer to the documentation for setting up a Vue 2 project: https://posthog.com/docs/libraries/vue',
+      'The Vue wizard requires Vue 3. Please refer to the documentation for setting up a Vue 2 project: https://posthog.com/docs/libraries/vue-js',
       0,
     );
   }
@@ -145,13 +145,28 @@ export async function runVueWizard(options: WizardOptions): Promise<void> {
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${
-    aiConsent
-      ? `Note: This uses experimental AI to setup your project. It might have got it wrong, pleaes check!\n`
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+      ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-  }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-    `${packageManagerForOutro.runScriptCommand} dev`,
-  )})`}
+    }
+${chalk.cyan('Changes made:')}
+• Installed posthog-js package
+• Added PostHog initialization to your Vue app
+• Setup event auto-capture to capture events as users interact with your app
+• Added a usePostHog() composable to your app for you to use in your components
+• Added your Project API key to your .env/.env.local file
+  
+${chalk.yellow('Next steps:')}
+• Connect PostHog to whatever page routing setup you have to automatically track pageviews
+• Use usePostHog() to start capturing events in your components
+• Upload environment variables to your production environment
+
+You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
+      `${packageManagerForOutro.runScriptCommand} dev`,
+    )})`}
+
+    
+${chalk.blue(`Learn more about PostHog + Vue: https://posthog.com/docs/libraries/vue-js`)}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
