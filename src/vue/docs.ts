@@ -28,9 +28,10 @@ export function usePostHog() {
   posthog.init(${apiKeyText}, {
     api_host: '${host}',
     capture_pageview: false,
-    debug: ${envVarPrefix === 'VITE_PUBLIC_'
-      ? 'import.meta.env.MODE === "development"'
-      : 'process.env.NODE_ENV === "development"'
+    debug: ${
+      envVarPrefix === 'VITE_PUBLIC_'
+        ? 'import.meta.env.MODE === "development"'
+        : 'process.env.NODE_ENV === "development"'
     },
   })
 
