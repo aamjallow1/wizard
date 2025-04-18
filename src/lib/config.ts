@@ -60,10 +60,22 @@ export const INTEGRATION_CONFIG = {
     generateFilesRules: '',
     filterFilesRules: '',
   },
+  [Integration.reactNative]: {
+    name: 'React Native',
+    filterPatterns: ['**/*.{ts,js}'],
+    ignorePatterns: ['node_modules', 'dist', 'build', 'public', 'static'],
+    detect: async (options) => {
+      const packageJson = await getPackageDotJson(options);
+      return hasPackageInstalled('react-native', packageJson);
+    },
+    generateFilesRules: '',
+    filterFilesRules: '',
+  },
 } as const satisfies Record<Integration, IntegrationConfig>;
 
 export const INTEGRATION_ORDER = [
   Integration.nextjs,
   Integration.svelte,
+  Integration.reactNative,
   Integration.react,
 ] as const;
