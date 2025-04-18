@@ -29,7 +29,9 @@ import { askForCloudRegion } from '../utils/clack-utils';
 import { addEditorRules } from '../utils/rules/add-editor-rules';
 import { EXPO } from '../utils/package-manager';
 
-export async function runReactNativeWizard(options: WizardOptions): Promise<void> {
+export async function runReactNativeWizard(
+  options: WizardOptions,
+): Promise<void> {
   printWelcome({
     wizardName: 'PostHog React Native Wizard',
   });
@@ -59,7 +61,6 @@ export async function runReactNativeWizard(options: WizardOptions): Promise<void
     analytics.setTag('react-native-version', reactNativeVersion);
   }
 
-
   const { projectApiKey, wizardHash, host } = await getOrAskForProjectData({
     ...options,
     cloudRegion,
@@ -78,7 +79,21 @@ export async function runReactNativeWizard(options: WizardOptions): Promise<void
 
   clack.log.info(`Detected ${isUsingExpo ? 'Expo' : 'react native'}`);
 
-  const packagesToInstall = isUsingExpo ? ['posthog-react-native', 'posthog-react-native-session-replay', 'expo-file-system', 'expo-application', 'expo-device', 'expo-localization'] : ['posthog-react-native', '@react-native-async-storage/async-storage', 'react-native-device-info', 'react-native-localize'];
+  const packagesToInstall = isUsingExpo
+    ? [
+        'posthog-react-native',
+        'posthog-react-native-session-replay',
+        'expo-file-system',
+        'expo-application',
+        'expo-device',
+        'expo-localization',
+      ]
+    : [
+        'posthog-react-native',
+        '@react-native-async-storage/async-storage',
+        'react-native-device-info',
+        'react-native-localize',
+      ];
 
   for (const packageName of packagesToInstall) {
     await installPackage({
@@ -138,10 +153,11 @@ export async function runReactNativeWizard(options: WizardOptions): Promise<void
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${
+    aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-    }
+  }
 ${chalk.cyan('Changes made:')}
 • Installed required packages
 • Added PostHogProvider to the root of the app with your project API key and enabled autocapture
@@ -153,13 +169,13 @@ ${chalk.yellow('Next steps:')}
 • Remember to add environment variables to your production environment
 
 You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-      `${packageManagerForOutro.runScriptCommand} dev`,
-    )})`}
+    `${packageManagerForOutro.runScriptCommand} dev`,
+  )})`}
 
     
 ${chalk.blue(
-      `Learn more about PostHog + React Native: https://posthog.com/docs/libraries/react-native`,
-    )}
+  `Learn more about PostHog + React Native: https://posthog.com/docs/libraries/react-native`,
+)}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 

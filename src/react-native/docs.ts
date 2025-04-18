@@ -7,7 +7,6 @@ export const getReactNativeDocumentation = ({
   host: string;
   projectApiKey: string;
 }) => {
-
   return `
 ==============================
 FILE: {index / App}.${language === 'typescript' ? 'ts' : 'js'}
