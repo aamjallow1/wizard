@@ -80,19 +80,19 @@ export async function runReactNativeWizard(
 
   const packagesToInstall = isUsingExpo
     ? [
-        'posthog-react-native',
-        'posthog-react-native-session-replay',
-        'expo-file-system',
-        'expo-application',
-        'expo-device',
-        'expo-localization',
-      ]
+      'posthog-react-native',
+      'posthog-react-native-session-replay',
+      'expo-file-system',
+      'expo-application',
+      'expo-device',
+      'expo-localization',
+    ]
     : [
-        'posthog-react-native',
-        '@react-native-async-storage/async-storage',
-        'react-native-device-info',
-        'react-native-localize',
-      ];
+      'posthog-react-native',
+      '@react-native-async-storage/async-storage',
+      'react-native-device-info',
+      'react-native-localize',
+    ];
 
   for (const packageName of packagesToInstall) {
     await installPackage({
@@ -119,8 +119,7 @@ export async function runReactNativeWizard(
   });
 
   clack.log.info(
-    `Reviewing PostHog documentation for ${
-      isUsingExpo ? 'Expo' : 'React Native'
+    `Reviewing PostHog documentation for ${isUsingExpo ? 'Expo' : 'React Native'
     }`,
   );
 
@@ -154,14 +153,13 @@ export async function runReactNativeWizard(
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${
-    aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-  }
+    }
 ${chalk.cyan('Changes made:')}
 • Installed required packages
-• Added PostHogProvider to the root of the App
+• Added PostHogProvider to the root of the app
 • Enabled autocapture and session replay
 ${addedEditorRules ? `• Added Cursor rules for PostHog` : ''}
   
@@ -173,8 +171,8 @@ You should validate your setup by (re)starting your dev environment and launchin
 
     
 ${chalk.blue(
-  `Learn more about PostHog + React Native: https://posthog.com/docs/libraries/react-native`,
-)}
+      `Learn more about PostHog + React Native: https://posthog.com/docs/libraries/react-native`,
+    )}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
