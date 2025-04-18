@@ -17,8 +17,9 @@ export const getReactDocumentation = ({
 
   return `
 ==============================
-FILE: {index / App}.${language === 'typescript' ? 'tsx' : 'jsx'
-    } (wherever the root of the app is)
+FILE: {index / App}.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  } (wherever the root of the app is)
 LOCATION: Wherever the root of the app is
 ==============================
 Changes:
@@ -40,10 +41,11 @@ root.render(
       apiKey={${apiKeyText}}
       options={{
         api_host: ${hostText},
-        debug: ${envVarPrefix === 'VITE_PUBLIC_'
-      ? 'import.meta.env.MODE === "development"'
-      : 'process.env.NODE_ENV === "development"'
-    },
+        debug: ${
+          envVarPrefix === 'VITE_PUBLIC_'
+            ? 'import.meta.env.MODE === "development"'
+            : 'process.env.NODE_ENV === "development"'
+        },
       }}
     >
       <App />

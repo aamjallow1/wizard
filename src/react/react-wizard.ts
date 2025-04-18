@@ -138,10 +138,11 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${
+    aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-    }
+  }
 ${chalk.cyan('Changes made:')}
 • Installed posthog-js package
 • Added PostHogProvider to the root of the app, to initialize PostHog and enable autocapture
@@ -153,13 +154,13 @@ ${chalk.yellow('Next steps:')}
 • Upload environment variables to your production environment
 
 You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-      `${packageManagerForOutro.runScriptCommand} dev`,
-    )})`}
+    `${packageManagerForOutro.runScriptCommand} dev`,
+  )})`}
 
     
 ${chalk.blue(
-      `Learn more about PostHog + React: https://posthog.com/docs/libraries/react`,
-    )}
+  `Learn more about PostHog + React: https://posthog.com/docs/libraries/react`,
+)}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
