@@ -1,9 +1,7 @@
 export const getReactDocumentation = ({
-  host,
   language,
   envVarPrefix,
 }: {
-  host: string;
   language: 'typescript' | 'javascript';
   envVarPrefix: string;
 }) => {
@@ -11,11 +9,16 @@ export const getReactDocumentation = ({
     envVarPrefix === 'VITE_PUBLIC_'
       ? 'import.meta.env.VITE_PUBLIC_POSTHOG_KEY'
       : `process.env.${envVarPrefix}POSTHOG_KEY`;
+
+  const hostText =
+    envVarPrefix === 'VITE_PUBLIC_'
+      ? 'import.meta.env.VITE_PUBLIC_POSTHOG_HOST'
+      : `process.env.${envVarPrefix}POSTHOG_HOST`;
+
   return `
 ==============================
-FILE: {index / App}.${
-    language === 'typescript' ? 'tsx' : 'jsx'
-  } (wherever the root of the app is)
+FILE: {index / App}.${language === 'typescript' ? 'tsx' : 'jsx'
+    } (wherever the root of the app is)
 LOCATION: Wherever the root of the app is
 ==============================
 Changes:
@@ -36,12 +39,11 @@ root.render(
     <PostHogProvider
       apiKey={${apiKeyText}}
       options={{
-        api_host: ${host},
-        debug: ${
-          envVarPrefix === 'VITE_PUBLIC_'
-            ? 'import.meta.env.MODE === "development"'
-            : 'process.env.NODE_ENV === "development"'
-        },
+        api_host: ${hostText},
+        debug: ${envVarPrefix === 'VITE_PUBLIC_'
+      ? 'import.meta.env.MODE === "development"'
+      : 'process.env.NODE_ENV === "development"'
+    },
       }}
     >
       <App />
