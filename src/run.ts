@@ -10,6 +10,7 @@ import path from 'path';
 import { INTEGRATION_CONFIG, INTEGRATION_ORDER } from './lib/config';
 import { runReactWizard } from './react/react-wizard';
 import { analytics } from './utils/analytics';
+import { runSvelteWizard } from './svelte/svelte-wizard';
 
 type Args = {
   integration?: Integration;
@@ -54,7 +55,9 @@ async function runWizard(argv: Args) {
     case Integration.react:
       await runReactWizard(wizardOptions);
       break;
-
+    case Integration.svelte:
+      await runSvelteWizard(wizardOptions);
+      break;
     default:
       clack.log.error('No setup wizard selected!');
   }
