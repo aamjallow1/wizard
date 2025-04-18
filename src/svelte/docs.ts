@@ -67,7 +67,6 @@ Changes:
 - Initialize a PostHog client for the server using posthog-node that can be used in other server-side code
 Example:
 --------------------------------------------------
-// src/lib/server/posthog${language === 'typescript' ? '.ts' : '.js'}
 import posthog, { PostHog } from 'posthog-node';
 import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from '$env/static/public';
 
