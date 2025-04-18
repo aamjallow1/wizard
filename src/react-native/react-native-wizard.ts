@@ -118,7 +118,7 @@ export async function runReactNativeWizard(
     projectApiKey,
   });
 
-  clack.log.info(`Reviewing PostHog documentation for React Native`);
+  clack.log.info(`Reviewing PostHog documentation for ${isUsingExpo ? 'Expo' : 'React Native'}`);
 
   const filesToChange = await getFilesToChange({
     integration: Integration.reactNative,
@@ -127,8 +127,6 @@ export async function runReactNativeWizard(
     wizardHash,
     cloudRegion,
   });
-
-  console.log(filesToChange, installationDocumentation);
 
   await generateFileChangesForIntegration({
     integration: Integration.reactNative,

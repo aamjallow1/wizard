@@ -51,7 +51,7 @@ export const INTEGRATION_CONFIG = {
   },
   [Integration.svelte]: {
     name: 'Svelte',
-    filterPatterns: ['**/*.{svelte,ts,js}'],
+    filterPatterns: ['**/*.{svelte,ts,js,jsx,tsx}'],
     ignorePatterns: ['node_modules', 'dist', 'build', 'public', 'static'],
     detect: async (options) => {
       const packageJson = await getPackageDotJson(options);
@@ -62,7 +62,7 @@ export const INTEGRATION_CONFIG = {
   },
   [Integration.reactNative]: {
     name: 'React Native',
-    filterPatterns: ['**/*.{ts,js}'],
+    filterPatterns: ['**/*.{ts,js,jsx,tsx}'],
     ignorePatterns: ['node_modules', 'dist', 'build', 'public', 'static'],
     detect: async (options) => {
       const packageJson = await getPackageDotJson(options);
