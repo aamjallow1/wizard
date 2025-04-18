@@ -5,8 +5,12 @@ export const getSvelteDocumentation = ({
 }) => {
   return `
 ==============================
-FILE: Root layout.${language === 'typescript' ? 'ts' : 'js'} file (e.g routes/+layout.${language === 'typescript' ? 'ts' : 'js'})
-LOCATION: Usually placed at the root of the app (e.g src/routes/+layout.${language === 'typescript' ? 'ts' : 'js'})
+FILE: Root layout.${
+    language === 'typescript' ? 'ts' : 'js'
+  } file (e.g routes/+layout.${language === 'typescript' ? 'ts' : 'js'})
+LOCATION: Usually placed at the root of the app (e.g src/routes/+layout.${
+    language === 'typescript' ? 'ts' : 'js'
+  })
 ==============================
 Changes:
 - Add a load function to initialize PostHog, checking if the browser is available to make sure it only initializes on the client
@@ -55,8 +59,9 @@ Example:
 
 ==============================
 File: PostHog server initializion
-LOCATION: With other server-side code, e.g. src/lib/server/posthog${language === 'typescript' ? '.ts' : '.js'
-    }
+LOCATION: With other server-side code, e.g. src/lib/server/posthog${
+    language === 'typescript' ? '.ts' : '.js'
+  }
 ==============================
 Changes:
 - Initialize a PostHog client for the server using posthog-node that can be used in other server-side code
