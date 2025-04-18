@@ -10,9 +10,11 @@ export const getReactNativeDocumentation = ({
   return `
 ==============================
 FILE: Modify the entrypoint for the app code
-LOCATION: Usually app/_layout.${language === 'typescript' ? 'tsx' : 'jsx'
-    }, app/index.${language === 'typescript' ? 'ts' : 'js'
-    }, App.${language === 'typescript' ? 'tsx' : 'jsx'} or something similar. There is only one entrypoint file, so you should edit the existing one.
+LOCATION: Usually app/_layout.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  }, app/index.${language === 'typescript' ? 'ts' : 'js'}, App.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  } or something similar. There is only one entrypoint file, so you should edit the existing one.
 ==============================
 Changes:
 - Add the PostHogProvider to the root of the app in the provider tree. If other providers are already present, add it in a suitable location.
