@@ -5,8 +5,8 @@ export const getSvelteDocumentation = ({
 }) => {
   return `
 ==============================
-FILE: Root layout (e.g +layout.svelte)
-LOCATION: Usually placed at the root of the app (e.g src/routes/+layout.svelte)
+FILE: Root layout.${language === 'typescript' ? 'ts' : 'js'} file (e.g routes/+layout.${language === 'typescript' ? 'ts' : 'js'})
+LOCATION: Usually placed at the root of the app (e.g src/routes/+layout.${language === 'typescript' ? 'ts' : 'js'})
 ==============================
 Changes:
 - Add a load function to initialize PostHog, checking if the browser is available to make sure it only initializes on the client
@@ -23,17 +23,40 @@ export const load = async () => {
       PUBLIC_POSTHOG_KEY,
       {
         api_host: PUBLIC_POSTHOG_HOST,
+        capture_pageview: false,
+        capture_pageleave: false
       }
     )
   }
   return
 };
+--------------------------------------------------
+
+==============================
+File: Root layout .svelte file (e.g routes/+layout.svelte)
+LOCATION: Usually placed at the root of the app (e.g src/routes/+layout.svelte)
+==============================
+Changes:
+- Add pageview & pageleave tracking to the layout
+
+Example:
+--------------------------------------------------
+<script>
+  import { browser } from '$app/environment';
+  import { beforeNavigate, afterNavigate } from '$app/navigation';
+  import posthog from 'posthog-js'
+
+  if (browser) {
+    beforeNavigate(() => posthog.capture('$pageleave'));
+    afterNavigate(() => posthog.capture('$pageview'));
+  }
+</script>
+--------------------------------------------------
 
 ==============================
 File: PostHog server initializion
-LOCATION: With other server-side code, e.g. src/lib/server/posthog${
-    language === 'typescript' ? '.ts' : '.js'
-  }
+LOCATION: With other server-side code, e.g. src/lib/server/posthog${language === 'typescript' ? '.ts' : '.js'
+    }
 ==============================
 Changes:
 - Initialize a PostHog client for the server using posthog-node that can be used in other server-side code
@@ -53,6 +76,7 @@ export function getPostHogClient() {
   }
   return _client;
 }
+--------------------------------------------------
 
 ==============================
 FILE: Svelte Config (e.g svelte.config.js)
