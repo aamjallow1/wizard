@@ -98,6 +98,7 @@ async function getIntegrationForSetup(
       options: [
         { value: Integration.nextjs, label: 'Next.js' },
         { value: Integration.react, label: 'React' },
+        { value: Integration.svelte, label: 'Svelte' },
       ],
     }),
   );
