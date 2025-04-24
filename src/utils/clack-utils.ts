@@ -1208,7 +1208,9 @@ export async function createPRFromNewBranch({
         );
       });
       prSpinner.stop(
-        `Successfully created PR! 🎉 You can review it here: ${result}`,
+        `Successfully created PR! 🎉 You can review it here: ${chalk.cyan(
+          result,
+        )}`,
       );
     } catch (prError: unknown) {
       prSpinner.stop(`Failed to create PR on branch '${newBranch}'.`);
