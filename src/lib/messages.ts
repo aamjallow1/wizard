@@ -34,17 +34,10 @@ ${addedEditorRules ? `• Added Cursor rules for PostHog` : ''}
 ${chalk.yellow('Next steps:')}
 ${integrationConfig.nextSteps}
 
-${chalk.blue(
-  `Learn more about PostHog + ${integrationConfig.name}: ${integrationConfig.docsUrl}`,
-)}
-${
-  continueUrl
-    ? `\n\n${chalk.blue(
-        `Continue your PostHog journey: ${chalk.cyan(continueUrl)}`,
-      )}`
-    : ``
-}
-
+Learn more about PostHog + ${integrationConfig.name}: ${chalk.cyan(
+    integrationConfig.docsUrl,
+  )}
+${continueUrl ? `\nContinue onboarding: ${chalk.cyan(continueUrl)}\n` : ``}
 Note: This uses experimental AI to setup your project. It might have got it wrong, please check!
 
 You should validate your setup by (re)starting your dev environment${
