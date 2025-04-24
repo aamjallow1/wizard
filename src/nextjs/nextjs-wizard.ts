@@ -34,6 +34,7 @@ import {
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
 import { addEditorRules } from '../utils/rules/add-editor-rules';
+import { getCloudUrlFromRegion } from '../utils/urls';
 
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -152,12 +153,15 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     default: options.default,
   });
 
+  const continueUrl = options.signup
+    ? `${getCloudUrlFromRegion(cloudRegion)}/products?source=wizard`
+    : undefined;
+
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${
-    aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-  }
+    }
 ${chalk.cyan('Changes made:')}
 • Installed posthog-js & posthog-node packages
 • Initialized PostHog, and added pageview tracking
@@ -172,13 +176,19 @@ ${chalk.yellow('Next steps:')}
 • Upload environment variables to your production environment
 
 You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-    `${packageManagerForOutro.runScriptCommand} dev`,
-  )})`}
+      `${packageManagerForOutro.runScriptCommand} dev`,
+    )})`}
 
     
 ${chalk.blue(
-  `Learn more about PostHog + Next.js: https://posthog.com/docs/libraries/next-js`,
-)}
+      `Learn more about PostHog + Next.js: https://posthog.com/docs/libraries/next-js`,
+    )}
+${continueUrl
+      ? `\n\n${chalk.blue(
+        `Continue your PostHog journey: ${chalk.cyan(continueUrl)}`,
+      )}`
+      : ``
+    }
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
