@@ -4,6 +4,7 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
+  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -27,7 +28,7 @@ import {
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
 import { addEditorRules } from '../utils/rules/add-editor-rules';
-import { getOutroMessage } from '../lib/messages';
+import { getOutroMessage, getPRDescription } from '../lib/messages';
 
 export async function runSvelteWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -142,12 +143,24 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     default: options.default,
   });
 
+  const prDescription = getPRDescription({
+    integration: Integration.svelte,
+    addedEditorRules,
+  });
+
+  const prUrl = await createPRFromNewBranch({
+    installDir: options.installDir,
+    integration: Integration.svelte,
+    body: prDescription,
+  });
+
   const outroMessage = getOutroMessage({
     options,
     integration: Integration.svelte,
     cloudRegion,
     addedEditorRules,
     packageManager: packageManagerForOutro,
+    prUrl,
   });
 
   clack.outro(outroMessage);

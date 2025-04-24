@@ -4,6 +4,7 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
+  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -27,7 +28,7 @@ import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
 import { addEditorRules } from '../utils/rules/add-editor-rules';
 import { EXPO } from '../utils/package-manager';
-import { getOutroMessage } from '../lib/messages';
+import { getOutroMessage, getPRDescription } from '../lib/messages';
 
 export async function runReactNativeWizard(
   options: WizardOptions,
@@ -158,12 +159,24 @@ export async function runReactNativeWizard(
     installDir: options.installDir,
   });
 
+  const prDescription = getPRDescription({
+    integration: Integration.reactNative,
+    addedEditorRules,
+  });
+
+  const prUrl = await createPRFromNewBranch({
+    installDir: options.installDir,
+    integration: Integration.reactNative,
+    body: prDescription,
+  });
+
   const outroMessage = getOutroMessage({
     options,
     integration: Integration.reactNative,
     cloudRegion,
     addedEditorRules,
     packageManager: packageManagerForOutro,
+    prUrl,
   });
 
   clack.outro(outroMessage);
