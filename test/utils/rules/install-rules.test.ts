@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import path from 'path';
-import { addEditorRules } from '../../../src/utils/rules/add-editor-rules';
+import { addEditorRules } from '../../../src/steps/add-editor-rules';
 import { analytics } from '../../../src/utils/analytics';
 import clack from '../../../src/utils/clack';
 import { Integration } from '../../../src/lib/constants';

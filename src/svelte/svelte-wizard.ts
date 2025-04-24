@@ -4,7 +4,6 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
-  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -12,14 +11,12 @@ import {
   installPackage,
   isUsingTypeScript,
   printWelcome,
-  runPrettierIfInstalled,
 } from '../utils/clack-utils';
 import { getPackageVersion, hasPackageInstalled } from '../utils/package-json';
 import clack from '../utils/clack';
 import { Integration } from '../lib/constants';
 import { getSvelteDocumentation } from './docs';
 import { analytics } from '../utils/analytics';
-import { addOrUpdateEnvironmentVariables } from '../utils/environment';
 import {
   generateFileChangesForIntegration,
   getFilesToChange,
@@ -27,8 +24,9 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
-import { addEditorRules } from '../utils/rules/add-editor-rules';
-import { getOutroMessage, getPRDescription } from '../lib/messages';
+import { addEditorRulesStep } from '../steps/add-editor-rules';
+import { getOutroMessage } from '../lib/messages';
+import { addOrUpdateEnvironmentVariablesStep, runPrettierStep } from '../steps';
 
 export async function runSvelteWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -119,7 +117,7 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  await addOrUpdateEnvironmentVariables({
+  await addOrUpdateEnvironmentVariablesStep({
     variables: {
       ['PUBLIC_POSTHOG_KEY']: projectApiKey,
       ['PUBLIC_POSTHOG_HOST']: host,
@@ -131,27 +129,16 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
   const packageManagerForOutro =
     packageManagerFromInstallStep ?? (await getPackageManager(options));
 
-  await runPrettierIfInstalled({
+  await runPrettierStep({
     installDir: options.installDir,
     integration: Integration.svelte,
   });
 
-  const addedEditorRules = await addEditorRules({
+  const addedEditorRules = await addEditorRulesStep({
     installDir: options.installDir,
     rulesName: 'svelte-rules.md',
     integration: Integration.svelte,
     default: options.default,
-  });
-
-  const prDescription = getPRDescription({
-    integration: Integration.svelte,
-    addedEditorRules,
-  });
-
-  const prUrl = await createPRFromNewBranch({
-    installDir: options.installDir,
-    integration: Integration.svelte,
-    body: prDescription,
   });
 
   const outroMessage = getOutroMessage({
@@ -160,7 +147,6 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
     addedEditorRules,
     packageManager: packageManagerForOutro,
-    prUrl,
   });
 
   clack.outro(outroMessage);

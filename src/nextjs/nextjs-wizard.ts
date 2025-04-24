@@ -3,7 +3,6 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
-  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -11,7 +10,6 @@ import {
   installPackage,
   isUsingTypeScript,
   printWelcome,
-  runPrettierIfInstalled,
 } from '../utils/clack-utils';
 import { getPackageVersion, hasPackageInstalled } from '../utils/package-json';
 import {
@@ -24,7 +22,6 @@ import clack from '../utils/clack';
 import { Integration } from '../lib/constants';
 import { getNextjsAppRouterDocs, getNextjsPagesRouterDocs } from './docs';
 import { analytics } from '../utils/analytics';
-import { addOrUpdateEnvironmentVariables } from '../utils/environment';
 import {
   generateFileChangesForIntegration,
   getFilesToChange,
@@ -32,9 +29,13 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
-import { addEditorRules } from '../utils/rules/add-editor-rules';
-import { getOutroMessage, getPRDescription } from '../lib/messages';
-
+import { getOutroMessage } from '../lib/messages';
+import {
+  addEditorRulesStep,
+  addOrUpdateEnvironmentVariablesStep,
+  createPRStep,
+  runPrettierStep,
+} from '../steps';
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
     wizardName: 'PostHog Next.js Wizard',
@@ -128,7 +129,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  await addOrUpdateEnvironmentVariables({
+  await addOrUpdateEnvironmentVariablesStep({
     variables: {
       NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
       NEXT_PUBLIC_POSTHOG_HOST: host,
@@ -140,27 +141,22 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   const packageManagerForOutro =
     packageManagerFromInstallStep ?? (await getPackageManager(options));
 
-  await runPrettierIfInstalled({
+  await runPrettierStep({
     installDir: options.installDir,
     integration: Integration.nextjs,
   });
 
-  const addedEditorRules = await addEditorRules({
+  const addedEditorRules = await addEditorRulesStep({
     rulesName: 'next-rules.md',
     installDir: options.installDir,
     integration: Integration.nextjs,
     default: options.default,
   });
 
-  const prDescription = getPRDescription({
-    integration: Integration.nextjs,
-    addedEditorRules,
-  });
-
-  const prUrl = await createPRFromNewBranch({
+  const prUrl = await createPRStep({
     installDir: options.installDir,
     integration: Integration.nextjs,
-    body: prDescription,
+    addedEditorRules,
   });
 
   const outroMessage = getOutroMessage({
