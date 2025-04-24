@@ -28,6 +28,25 @@ async function getCurrentBranch(installDir: string): Promise<string> {
   });
 }
 
+async function checkForEnvFiles(installDir: string): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    childProcess.exec(
+      'git diff --cached --name-only | grep "^\\.env"',
+      { cwd: installDir },
+      (err, stdout) => {
+        // grep returns exit code 1 when no matches are found, which is our success case
+        if (err && err.code === 1) {
+          resolve(false);
+        } else if (err) {
+          reject(new Error(`Failed to check for .env files: ${err.message}`));
+        } else {
+          resolve(stdout.trim().length > 0);
+        }
+      },
+    );
+  });
+}
+
 interface CreatePRStepOptions {
   installDir: string;
   integration: Integration;
@@ -167,16 +186,64 @@ export async function createPRStep({
             : 'Unknown error',
         integration,
       });
+
+      clack.log.warn('Failed to create branch. Aborting PR creation 🚶‍➡️');
       return;
     }
 
-    // Stage and commit changes
-    const commitSpinner = clack.spinner();
-    commitSpinner.start('Staging and committing changes...');
     try {
       await new Promise<void>((resolve, reject) => {
         childProcess.exec(
-          `git add . && git commit -m "${prTitle}"`,
+          'git add .',
+          { cwd: installDir },
+          (err, stdout, stderr) => {
+            if (err) {
+              reject(new Error(`Failed to stage changes: ${stderr}`));
+            } else {
+              resolve();
+            }
+          },
+        );
+      });
+    } catch (stageError: unknown) {
+      analytics.capture('wizard interaction', {
+        action: 'failed to stage changes',
+        error: stageError instanceof Error ? stageError?.message : 'Unknown error',
+        integration,
+      });
+      clack.log.warn('Failed to stage changes. Aborting PR creation 🚶‍➡️');
+      return;
+    }
+
+    // Check for .env files in staged changes
+    try {
+      const hasEnvFiles = await checkForEnvFiles(installDir);
+      if (hasEnvFiles) {
+        clack.log.warn('Found .env files in staged changes. Aborting PR creation to prevent exposing sensitive data 🔐');
+        analytics.capture('wizard interaction', {
+          action: 'skipped pr creation',
+          reason: 'env files detected',
+          integration,
+        });
+        return;
+      }
+    } catch (envCheckError: unknown) {
+      clack.log.warn('Failed to check for .env files. Aborting PR creation 🚶‍➡️');
+      analytics.capture('wizard interaction', {
+        action: 'env check failed',
+        error: envCheckError instanceof Error ? envCheckError?.message : 'Unknown error',
+        integration,
+      });
+      return;
+    }
+
+    // Commit changes
+    const commitSpinner = clack.spinner();
+    commitSpinner.start('Committing changes...');
+    try {
+      await new Promise<void>((resolve, reject) => {
+        childProcess.exec(
+          `git commit -m "${prTitle}"`,
           { cwd: installDir },
           (err, stdout, stderr) => {
             if (err) {
@@ -188,13 +255,14 @@ export async function createPRStep({
         );
       });
     } catch (commitError: unknown) {
-      commitSpinner.stop('Failed to commit changes.');
+      commitSpinner.stop('Failed to commit changes. Aborting PR creation 🚶‍➡️');
       analytics.capture('wizard interaction', {
         action: 'failed to commit changes',
         error:
           commitError instanceof Error ? commitError?.message : 'Unknown error',
         integration,
       });
+
       return;
     }
     commitSpinner.stop('Changes committed successfully.');
@@ -217,7 +285,7 @@ export async function createPRStep({
         );
       });
     } catch (pushError: unknown) {
-      pushSpinner.stop('Failed to push branch.');
+      pushSpinner.stop('Failed to push branch. Aborting PR creation 🚶‍➡️');
       analytics.capture('wizard interaction', {
         action: 'failed to push branch',
         error:
@@ -260,7 +328,7 @@ export async function createPRStep({
         )}`,
       );
     } catch (prError: unknown) {
-      prSpinner.stop(`Failed to create PR on branch '${newBranch}'.`);
+      prSpinner.stop(`Failed to create PR on branch '${newBranch}'. Aborting PR creation 🚶‍➡️`);
       analytics.capture('wizard interaction', {
         action: 'failed to create pr',
         error: prError instanceof Error ? prError?.message : 'Unknown error',

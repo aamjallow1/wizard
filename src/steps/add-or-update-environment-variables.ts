@@ -35,6 +35,9 @@ export async function addOrUpdateEnvironmentVariablesStep({
 
     const relativeEnvFilePath = path.relative(installDir, targetEnvFilePath);
 
+    let addedGitignore = false;
+    let addedEnvVariables = false;
+
     if (dotEnvFileExists) {
       try {
         let dotEnvFileContent = fs.readFileSync(targetEnvFilePath, 'utf8');
@@ -75,12 +78,26 @@ export async function addOrUpdateEnvironmentVariablesStep({
             )} already has the necessary environment variables.`,
           );
         }
+
+        addedEnvVariables = true;
       } catch (error) {
         clack.log.warning(
           `Failed to update environment variables in ${chalk.bold.cyan(
             relativeEnvFilePath,
           )}. Please update them manually.`,
         );
+
+        analytics.capture('wizard interaction', {
+          action: 'failed to update environment variables',
+          integration,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+
+        return {
+          relativeEnvFilePath,
+          addedEnvVariables,
+          addedGitignore
+        };
       }
     } else {
       try {
@@ -93,12 +110,26 @@ export async function addOrUpdateEnvironmentVariablesStep({
             relativeEnvFilePath,
           )} with environment variables.`,
         );
+
+        addedEnvVariables = true;
       } catch (error) {
         clack.log.warning(
           `Failed to create ${chalk.bold.cyan(
             relativeEnvFilePath,
           )} with environment variables. Please add them manually.`,
         );
+
+        analytics.capture('wizard interaction', {
+          action: 'failed to create environment variables',
+          integration,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+
+        return {
+          relativeEnvFilePath,
+          addedEnvVariables,
+          addedGitignore
+        };
       }
     }
 
@@ -107,8 +138,6 @@ export async function addOrUpdateEnvironmentVariablesStep({
     const envFileName = path.basename(targetEnvFilePath);
 
     const envFiles = [envFileName];
-
-    let addedGitignore = false;
 
     if (gitignorePath) {
       const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
@@ -137,6 +166,18 @@ export async function addOrUpdateEnvironmentVariablesStep({
               '.gitignore',
             )} to include ${chalk.bold.cyan(envFileName)}.`,
           );
+
+          analytics.capture('wizard interaction', {
+            action: 'failed to update gitignore',
+            integration,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+
+          return {
+            relativeEnvFilePath,
+            addedEnvVariables,
+            addedGitignore
+          };
         }
       }
     } else {
@@ -160,6 +201,18 @@ export async function addOrUpdateEnvironmentVariablesStep({
             '.gitignore',
           )} with environment files.`,
         );
+
+        analytics.capture('wizard interaction', {
+          action: 'failed to create gitignore',
+          integration,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+
+        return {
+          relativeEnvFilePath,
+          addedEnvVariables,
+          addedGitignore,
+        };
       }
     }
 
@@ -170,7 +223,7 @@ export async function addOrUpdateEnvironmentVariablesStep({
 
     return {
       relativeEnvFilePath,
-      addedEnvVariables: true,
+      addedEnvVariables,
       addedGitignore,
     };
   });
