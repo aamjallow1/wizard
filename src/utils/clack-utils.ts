@@ -1016,8 +1016,11 @@ export async function createPRFromNewBranch({
     let baseBranch: string;
     try {
       baseBranch = await getCurrentBranch(installDir);
-    } catch (error: any) {
-      clack.log.error(error.message);
+    } catch (error: unknown) {
+      analytics.capture('wizard interaction', {
+        action: 'failed to get current branch',
+        error: error instanceof Error ? error?.message : 'Unknown error',
+      });
       return;
     }
 
@@ -1043,9 +1046,9 @@ export async function createPRFromNewBranch({
         );
       });
     } catch {
-      clack.log.warn(
-        'Not logged into GitHub - skipping automatic PR creation.',
-      );
+      analytics.capture('wizard interaction', {
+        action: 'not logged into github',
+      });
       return;
     }
 
@@ -1065,12 +1068,16 @@ export async function createPRFromNewBranch({
         );
       });
     } catch (_error: unknown) {
+      analytics.capture('wizard interaction', {
+        action: 'branch already exists',
+        error: _error instanceof Error ? _error?.message : 'Unknown error',
+      });
       return;
     }
 
     const createPR = await abortIfCancelled(
       clack.select({
-        message: 'Would you like to create a PR for this integration?',
+        message: 'Would you like to create a PR automatically?',
         initialValue: true,
         options: [
           {
@@ -1092,6 +1099,7 @@ export async function createPRFromNewBranch({
       return;
     }
 
+    // Create a new branch
     try {
       await new Promise<void>((resolve, reject) => {
         childProcess.exec(
@@ -1108,8 +1116,14 @@ export async function createPRFromNewBranch({
           },
         );
       });
-    } catch (createBranchError: any) {
-      clack.log.error(createBranchError.message);
+    } catch (createBranchError: unknown) {
+      analytics.capture('wizard interaction', {
+        action: 'failed to create branch',
+        error:
+          createBranchError instanceof Error
+            ? createBranchError?.message
+            : 'Unknown error',
+      });
       return;
     }
 
@@ -1130,9 +1144,13 @@ export async function createPRFromNewBranch({
           },
         );
       });
-    } catch (commitError: any) {
+    } catch (commitError: unknown) {
       commitSpinner.stop('Failed to commit changes.');
-      clack.log.warn(commitError.message);
+      analytics.capture('wizard interaction', {
+        action: 'failed to commit changes',
+        error:
+          commitError instanceof Error ? commitError?.message : 'Unknown error',
+      });
       return;
     }
     commitSpinner.stop('Changes committed successfully.');
@@ -1156,7 +1174,11 @@ export async function createPRFromNewBranch({
       });
     } catch (pushError: any) {
       pushSpinner.stop('Failed to push branch.');
-      clack.log.warn(pushError.message);
+      analytics.capture('wizard interaction', {
+        action: 'failed to push branch',
+        error:
+          pushError instanceof Error ? pushError?.message : 'Unknown error',
+      });
       return;
     }
     pushSpinner.stop('Branch pushed successfully.');
@@ -1185,12 +1207,15 @@ export async function createPRFromNewBranch({
           },
         );
       });
-      prSpinner.stop(`Successfully created PR! 🎉`);
-
-      clack.log.info(result);
-    } catch (prError: any) {
+      prSpinner.stop(
+        `Successfully created PR! 🎉 You can review it here: ${result}`,
+      );
+    } catch (prError: unknown) {
       prSpinner.stop(`Failed to create PR on branch '${newBranch}'.`);
-      clack.log.warn(prError.message);
+      analytics.capture('wizard interaction', {
+        action: 'failed to create pr',
+        error: prError instanceof Error ? prError?.message : 'Unknown error',
+      });
       return;
     }
 
