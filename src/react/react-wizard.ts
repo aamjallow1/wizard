@@ -20,7 +20,10 @@ import clack from '../utils/clack';
 import { Integration, ISSUES_URL } from '../lib/constants';
 import { getReactDocumentation } from './docs';
 import { analytics } from '../utils/analytics';
-import { addOrUpdateEnvironmentVariables } from '../utils/environment';
+import {
+  addOrUpdateEnvironmentVariables,
+  detectEnvVarPrefix,
+} from '../utils/environment';
 import {
   generateFileChangesForIntegration,
   getFilesToChange,
@@ -28,6 +31,7 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
+import { addEditorRules } from '../utils/rules/add-editor-rules';
 
 export async function runReactWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -84,9 +88,11 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     integration: Integration.react,
   });
 
+  const envVarPrefix = await detectEnvVarPrefix(options);
+
   const installationDocumentation = getReactDocumentation({
-    host,
     language: typeScriptDetected ? 'typescript' : 'javascript',
+    envVarPrefix,
   });
 
   clack.log.info(`Reviewing PostHog documentation for React`);
@@ -110,7 +116,8 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
 
   await addOrUpdateEnvironmentVariables({
     variables: {
-      REACT_APP_PUBLIC_POSTHOG_KEY: projectApiKey,
+      [envVarPrefix + 'POSTHOG_KEY']: projectApiKey,
+      [envVarPrefix + 'POSTHOG_HOST']: host,
     },
     installDir: options.installDir,
     integration: Integration.react,
@@ -124,18 +131,36 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     integration: Integration.react,
   });
 
-  await createPRFromNewBranch({
+  const addedEditorRules = await addEditorRules({
     installDir: options.installDir,
+    rulesName: 'react-rules.md',
+    integration: Integration.react,
+    default: options.default,
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${
-    aiConsent
-      ? `Note: This uses experimental AI to setup your project. It might have got it wrong, pleaes check!\n`
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+      ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-  }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-    `${packageManagerForOutro.runScriptCommand} dev`,
-  )})`}
+    }
+${chalk.cyan('Changes made:')}
+• Installed posthog-js package
+• Added PostHogProvider to the root of the app, to initialize PostHog and enable autocapture
+• Added your Project API key to your .env file
+${addedEditorRules ? `• Added Cursor rules for PostHog` : ''}
+  
+${chalk.yellow('Next steps:')}
+• Call posthog.identify() when a user signs into your app
+• Upload environment variables to your production environment
+
+You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
+      `${packageManagerForOutro.runScriptCommand} dev`,
+    )})`}
+
+    
+${chalk.blue(
+      `Learn more about PostHog + React: https://posthog.com/docs/libraries/react`,
+    )}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 

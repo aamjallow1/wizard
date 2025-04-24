@@ -5,7 +5,6 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
-  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -34,6 +33,7 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
+import { addEditorRules } from '../utils/rules/add-editor-rules';
 
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -131,6 +131,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   await addOrUpdateEnvironmentVariables({
     variables: {
       NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+      NEXT_PUBLIC_POSTHOG_HOST: host,
     },
     installDir: options.installDir,
     integration: Integration.nextjs,
@@ -144,18 +145,39 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  await createPRFromNewBranch({
+  const addedEditorRules = await addEditorRules({
+    rulesName: 'next-rules.md',
     installDir: options.installDir,
+    integration: Integration.nextjs,
+    default: options.default,
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${
-    aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-  }You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-    `${packageManagerForOutro.runScriptCommand} dev`,
-  )})`}
+    }
+${chalk.cyan('Changes made:')}
+• Installed posthog-js & posthog-node packages
+• Initialized PostHog, and added pageview tracking
+• Created a PostHogClient to use PostHog server-side
+• Setup a reverse proxy to avoid ad blockers blocking analytics requests
+• Added your Project API key to your .env file
+${addedEditorRules ? `• Added Cursor rules for PostHog` : ''}
+  
+${chalk.yellow('Next steps:')}
+• Call posthog.identify() when a user signs into your app
+• Call posthog.capture() to capture custom events in your app
+• Upload environment variables to your production environment
+
+You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
+      `${packageManagerForOutro.runScriptCommand} dev`,
+    )})`}
+
+    
+${chalk.blue(
+      `Learn more about PostHog + Next.js: https://posthog.com/docs/libraries/next-js`,
+    )}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 

@@ -33,6 +33,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       ui_host: "${getUiHostFromHost(host)}",
       capture_pageview: false, // We capture pageviews manually
       capture_pageleave: true, // Enable pageleave capture
+      debug: process.env.NODE_ENV === "development",
     })
   }, [])
 
@@ -113,7 +114,7 @@ import { PostHog } from "posthog-node"
 
 export default function PostHogClient() {
   const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-    host: "${host}",
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     flushAt: 1,
     flushInterval: 0,
   })
@@ -191,6 +192,7 @@ export default function App({ Component, pageProps }) {
       loaded: (posthog) => {
         if (process.env.NODE_ENV === "development") posthog.debug()
       },
+      debug: process.env.NODE_ENV === "development",
     })
 
     const handleRouteChange = () => posthog?.capture("$pageview")
@@ -222,7 +224,7 @@ import { PostHog } from "posthog-node"
 
 export default function PostHogClient() {
   const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-    host: "${host}",
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     flushAt: 1,
     flushInterval: 0,
   })

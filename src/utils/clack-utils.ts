@@ -410,6 +410,7 @@ export async function runPrettierIfInstalled({
       });
     } catch (e) {
       prettierSpinner.stop('Prettier failed to run.');
+
       clack.log.warn(
         'Prettier failed to run. There may be formatting issues in your updated files.',
       );
@@ -928,7 +929,7 @@ export async function askForAIConsent(options: Pick<WizardOptions, 'default'>) {
       ? true
       : await abortIfCancelled(
         clack.select({
-          message: 'Use AI to setup PostHog automatically? ✨',
+          message: 'This setup wizard uses AI, are you happy to continue? ✨',
           options: [
             {
               label: 'Yes',
@@ -938,7 +939,7 @@ export async function askForAIConsent(options: Pick<WizardOptions, 'default'>) {
             {
               label: 'No',
               value: false,
-              hint: 'Continue without AI assistance',
+              hint: "I don't like AI",
             },
           ],
           initialValue: true,
