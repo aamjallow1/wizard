@@ -10,41 +10,114 @@ import { getPRDescription } from '../lib/messages';
 export const PR_CONFIG = {
   defaultBranchName: 'posthog-integration',
   defaultTitle: 'feat: add PostHog integration',
-};
+} as const;
 
-async function getCurrentBranch(installDir: string): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    childProcess.exec(
-      `git rev-parse --abbrev-ref HEAD`,
-      { cwd: installDir },
-      (err, stdout, stderr) => {
-        if (err) {
-          reject(new Error(`Failed to detect current branch: ${stderr}`));
-        } else {
-          resolve(stdout.trim());
-        }
-      },
-    );
+interface GitCommandResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export async function execGitCommand(
+  command: string,
+  cwd: string,
+): Promise<GitCommandResult<string>> {
+  return new Promise((resolve) => {
+    childProcess.exec(command, { cwd }, (err, stdout, stderr) => {
+      if (err) {
+        resolve({ success: false, error: stderr || err.message });
+      } else {
+        resolve({ success: true, data: stdout.trim() });
+      }
+    });
   });
 }
 
-async function checkForEnvFiles(installDir: string): Promise<boolean> {
-  return new Promise<boolean>((resolve, reject) => {
-    childProcess.exec(
-      'git diff --cached --name-only | grep "^\\.env"',
-      { cwd: installDir },
-      (err, stdout) => {
-        // grep returns exit code 1 when no matches are found, which is our success case
-        if (err && err.code === 1) {
-          resolve(false);
-        } else if (err) {
-          reject(new Error(`Failed to check for .env files: ${err.message}`));
-        } else {
-          resolve(stdout.trim().length > 0);
-        }
-      },
-    );
-  });
+export async function getCurrentBranch(
+  installDir: string,
+): Promise<GitCommandResult<string>> {
+  return execGitCommand('git rev-parse --abbrev-ref HEAD', installDir);
+}
+
+export async function checkGitHubAuth(
+  installDir: string,
+): Promise<GitCommandResult<string>> {
+  return execGitCommand('gh auth status', installDir);
+}
+
+export async function checkBranchExists(
+  branch: string,
+  installDir: string,
+): Promise<GitCommandResult<boolean>> {
+  const result = await execGitCommand(
+    `git rev-parse --verify ${branch}`,
+    installDir,
+  );
+  // If the command fails, the branch does not exist
+  if (!result.success) {
+    return { success: true, data: true };
+  }
+  // If the command succeeds, the branch exists
+  return { success: false, data: false };
+}
+
+export async function createBranch(
+  branch: string,
+  installDir: string,
+): Promise<GitCommandResult<string>> {
+  return execGitCommand(`git checkout -b ${branch}`, installDir);
+}
+
+export async function stageChanges(
+  installDir: string,
+): Promise<GitCommandResult<string>> {
+  return execGitCommand('git add .', installDir);
+}
+
+export async function checkForEnvFiles(
+  installDir: string,
+): Promise<GitCommandResult<boolean>> {
+  const result = await execGitCommand(
+    'git diff --cached --name-only | grep "^\\.env"',
+    installDir,
+  );
+  // grep returns exit code 1 when no matches found
+  if (result.error?.includes('command failed with exit code 1')) {
+    return { success: true, data: false };
+  }
+  // Propagate grep errors as failures
+  if (!result.success) {
+    return { success: false, error: result.error };
+  }
+  // Matches found
+  return { success: true, data: Boolean(result.data) };
+}
+
+export async function commitChanges(
+  message: string,
+  installDir: string,
+): Promise<GitCommandResult<string>> {
+  return execGitCommand(`git commit -m "${message}"`, installDir);
+}
+
+export async function pushBranch(
+  branch: string,
+  installDir: string,
+): Promise<GitCommandResult<string>> {
+  return execGitCommand(`git push -u origin ${branch}`, installDir);
+}
+
+export async function createGitHubPR(
+  baseBranch: string,
+  newBranch: string,
+  title: string,
+  body: string,
+  installDir: string,
+): Promise<GitCommandResult<string>> {
+  return execGitCommand(
+    `gh pr create --base ${baseBranch} --head ${newBranch} --title "${title}" --body "${body}"`,
+    installDir,
+  );
 }
 
 interface CreatePRStepOptions {
@@ -64,69 +137,48 @@ export async function createPRStep({
       return;
     }
 
-    let baseBranch: string;
-    try {
-      baseBranch = await getCurrentBranch(installDir);
-    } catch (error: unknown) {
+    // Get current branch
+    const currentBranchResult = await getCurrentBranch(installDir);
+    if (!currentBranchResult.success || !currentBranchResult.data) {
       analytics.capture('wizard interaction', {
         action: 'failed to get current branch',
-        error: error instanceof Error ? error?.message : 'Unknown error',
+        error: currentBranchResult.error,
         integration,
       });
+      clack.log.warn(
+        'Failed to get current branch. Aborting PR creation 🚶‍➡️',
+      );
       return;
     }
+    const baseBranch = currentBranchResult.data;
 
-    // if (!['main', 'master'].includes(baseBranch)) {
-    //   clack.log.info(
-    //     `Current branch is "${baseBranch}". Skipping PR creation since we're not on "main" or "master".`,
-    //   );
-    //   return;
-    // }
-
-    try {
-      await new Promise<void>((resolve, reject) => {
-        childProcess.exec(
-          'gh auth status',
-          { cwd: installDir },
-          (err, _stdout, stderr) => {
-            if (err) {
-              reject(new Error(stderr || 'Not authenticated with GitHub CLI'));
-            } else {
-              resolve();
-            }
-          },
-        );
-      });
-    } catch {
+    // Check GitHub auth
+    const authResult = await checkGitHubAuth(installDir);
+    if (!authResult.success) {
       analytics.capture('wizard interaction', {
         action: 'not logged into github',
         error: 'Not authenticated with GitHub CLI',
         integration,
       });
+      clack.log.warn(
+        'Not authenticated with GitHub CLI. Aborting PR creation 🚶‍➡️',
+      );
       return;
     }
 
     const newBranch = PR_CONFIG.defaultBranchName;
-    try {
-      await new Promise<void>((resolve, reject) => {
-        childProcess.exec(
-          `git rev-parse --verify ${newBranch}`,
-          { cwd: installDir },
-          (err) => {
-            if (!err) {
-              reject(new Error(`Branch '${newBranch}' already exists.`));
-            } else {
-              resolve();
-            }
-          },
-        );
-      });
-    } catch (_error: unknown) {
+
+    // Check if branch exists
+    const branchExistsResult = await checkBranchExists(newBranch, installDir);
+    if (!branchExistsResult.success) {
       analytics.capture('wizard interaction', {
         action: 'branch already exists',
-        error: _error instanceof Error ? _error?.message : 'Unknown error',
+        error: branchExistsResult.error,
         integration,
       });
+      clack.log.warn(
+        `Branch '${newBranch}' already exists. Aborting PR creation 🚶‍➡️`,
+      );
       return;
     }
 
@@ -160,86 +212,51 @@ export async function createPRStep({
       return;
     }
 
-    // Create a new branch
-    try {
-      await new Promise<void>((resolve, reject) => {
-        childProcess.exec(
-          `git checkout -b ${newBranch}`,
-          { cwd: installDir },
-          (err, stdout, stderr) => {
-            if (err) {
-              reject(
-                new Error(`Failed to create branch '${newBranch}': ${stderr}`),
-              );
-            } else {
-              resolve();
-            }
-          },
-        );
-      });
-    } catch (createBranchError: unknown) {
+    // Create branch
+    const createBranchResult = await createBranch(newBranch, installDir);
+    if (!createBranchResult.success) {
       analytics.capture('wizard interaction', {
         action: 'failed to create branch',
-        error:
-          createBranchError instanceof Error
-            ? createBranchError?.message
-            : 'Unknown error',
+        error: createBranchResult.error,
         integration,
       });
-
       clack.log.warn('Failed to create branch. Aborting PR creation 🚶‍➡️');
       return;
     }
 
-    try {
-      await new Promise<void>((resolve, reject) => {
-        childProcess.exec(
-          'git add .',
-          { cwd: installDir },
-          (err, stdout, stderr) => {
-            if (err) {
-              reject(new Error(`Failed to stage changes: ${stderr}`));
-            } else {
-              resolve();
-            }
-          },
-        );
-      });
-    } catch (stageError: unknown) {
+    // Stage changes
+    const stageResult = await stageChanges(installDir);
+    if (!stageResult.success) {
       analytics.capture('wizard interaction', {
         action: 'failed to stage changes',
-        error:
-          stageError instanceof Error ? stageError?.message : 'Unknown error',
+        error: stageResult.error,
         integration,
       });
       clack.log.warn('Failed to stage changes. Aborting PR creation 🚶‍➡️');
       return;
     }
 
-    // Check for .env files in staged changes
-    try {
-      const hasEnvFiles = await checkForEnvFiles(installDir);
-      if (hasEnvFiles) {
-        clack.log.warn(
-          'Found .env files in staged changes. Aborting PR creation to prevent exposing sensitive data 🔐',
-        );
-        analytics.capture('wizard interaction', {
-          action: 'skipped pr creation',
-          reason: 'env files detected',
-          integration,
-        });
-        return;
-      }
-    } catch (envCheckError: unknown) {
+    // Check for env files
+    const envCheckResult = await checkForEnvFiles(installDir);
+    if (!envCheckResult.success) {
+      analytics.capture('wizard interaction', {
+        action: 'env check failed',
+        error: envCheckResult.error,
+        integration,
+      });
       clack.log.warn(
         'Failed to check for .env files. Aborting PR creation 🚶‍➡️',
       );
+      return;
+    }
+
+    if (envCheckResult.data) {
+      clack.log.warn(
+        'Found .env files in staged changes. Aborting PR creation to prevent exposing sensitive data 🔐',
+      );
       analytics.capture('wizard interaction', {
-        action: 'env check failed',
-        error:
-          envCheckError instanceof Error
-            ? envCheckError?.message
-            : 'Unknown error',
+        action: 'skipped pr creation',
+        reason: 'env files detected',
         integration,
       });
       return;
@@ -248,106 +265,65 @@ export async function createPRStep({
     // Commit changes
     const commitSpinner = clack.spinner();
     commitSpinner.start('Committing changes...');
-    try {
-      await new Promise<void>((resolve, reject) => {
-        childProcess.exec(
-          `git commit -m "${prTitle}"`,
-          { cwd: installDir },
-          (err, stdout, stderr) => {
-            if (err) {
-              reject(new Error(`Failed to commit changes: ${stderr}`));
-            } else {
-              resolve();
-            }
-          },
-        );
-      });
-    } catch (commitError: unknown) {
+    const commitResult = await commitChanges(prTitle, installDir);
+    if (!commitResult.success) {
       commitSpinner.stop(
         'Failed to commit changes. Aborting PR creation 🚶‍➡️',
       );
       analytics.capture('wizard interaction', {
         action: 'failed to commit changes',
-        error:
-          commitError instanceof Error ? commitError?.message : 'Unknown error',
+        error: commitResult.error,
         integration,
       });
-
       return;
     }
     commitSpinner.stop('Changes committed successfully.');
 
-    // Push the branch to remote
+    // Push branch
     const pushSpinner = clack.spinner();
     pushSpinner.start('Pushing branch to remote...');
-    try {
-      await new Promise<void>((resolve, reject) => {
-        childProcess.exec(
-          `git push -u origin ${newBranch}`,
-          { cwd: installDir },
-          (err, _stdout, stderr) => {
-            if (err) {
-              reject(new Error(`Failed to push branch: ${stderr}`));
-            } else {
-              resolve();
-            }
-          },
-        );
-      });
-    } catch (pushError: unknown) {
+    const pushResult = await pushBranch(newBranch, installDir);
+    if (!pushResult.success) {
       pushSpinner.stop('Failed to push branch. Aborting PR creation 🚶‍➡️');
       analytics.capture('wizard interaction', {
         action: 'failed to push branch',
-        error:
-          pushError instanceof Error ? pushError?.message : 'Unknown error',
+        error: pushResult.error,
         integration,
       });
       return;
     }
     pushSpinner.stop('Branch pushed successfully.');
 
+    // Create PR
     const prSpinner = clack.spinner();
     prSpinner.start(
       `Creating a PR on branch '${newBranch}' with base '${baseBranch}'...`,
     );
-
-    let result = '';
-
-    try {
-      await new Promise<void>((resolve, reject) => {
-        childProcess.exec(
-          `gh pr create --base ${baseBranch} --head ${newBranch} --title "${prTitle}" --body "${prDescription}"`,
-          { cwd: installDir },
-          (err, stdout, stderr) => {
-            if (err) {
-              reject(new Error(`Failed to create PR: ${stderr}`));
-            } else {
-              try {
-                result = stdout;
-                resolve();
-              } catch (parseError) {
-                reject(new Error('Failed to parse PR URL from response'));
-              }
-            }
-          },
-        );
-      });
-      prSpinner.stop(
-        `Successfully created PR! 🎉 You can review it here: ${chalk.cyan(
-          result,
-        )}`,
-      );
-    } catch (prError: unknown) {
+    const prResult = await createGitHubPR(
+      baseBranch,
+      newBranch,
+      prTitle,
+      prDescription,
+      installDir,
+    );
+    if (!prResult.success || !prResult.data) {
       prSpinner.stop(
         `Failed to create PR on branch '${newBranch}'. Aborting PR creation 🚶‍➡️`,
       );
       analytics.capture('wizard interaction', {
         action: 'failed to create pr',
-        error: prError instanceof Error ? prError?.message : 'Unknown error',
+        error: prResult.error,
         integration,
       });
       return;
     }
+
+    const prUrl = prResult.data;
+    prSpinner.stop(
+      `Successfully created PR! 🎉 You can review it here: ${chalk.cyan(
+        prUrl,
+      )}`,
+    );
 
     analytics.capture('wizard interaction', {
       action: 'created pr',
@@ -356,6 +332,6 @@ export async function createPRStep({
       integration,
     });
 
-    return result;
+    return prUrl;
   });
 }
