@@ -569,6 +569,7 @@ export async function getOrAskForProjectData(
   const { host, projectApiKey, wizardHash } = await traceStep('login', () =>
     askForWizardLogin({
       url: cloudUrl,
+      signup: _options.signup,
     }),
   );
 
@@ -595,6 +596,7 @@ ${chalk.cyan(`${cloudUrl}/settings/project#variables`)}`);
 
 async function askForWizardLogin(options: {
   url: string;
+  signup: boolean;
 }): Promise<ProjectData> {
   let wizardHash: string;
 
@@ -610,16 +612,29 @@ async function askForWizardLogin(options: {
         `Please try again in a few minutes and let us know if this issue persists: ${ISSUES_URL}`,
       ),
     );
+    throw e;
   }
 
-  const loginUrl = new URL(`${options.url}/wizard?hash=${wizardHash!}`);
+  const loginUrl = new URL(`${options.url}/wizard?hash=${wizardHash}`);
 
-  const urlToOpen = loginUrl.toString();
+  const signupUrl = new URL(
+    `${options.url}/signup?next=${encodeURIComponent(
+      `/wizard?hash=${wizardHash}`,
+    )}`,
+  );
+
+  const urlToOpen = options.signup ? signupUrl.toString() : loginUrl.toString();
 
   clack.log.info(
     `${chalk.bold(
       `If the browser window didn't open automatically, please open the following link to login into PostHog:`,
-    )}\n\n${chalk.cyan(urlToOpen)}`,
+    )}\n\n${chalk.cyan(urlToOpen)}${
+      options.signup
+        ? `\n\nIf you already have an account, you can use this link:\n\n${chalk.cyan(
+            loginUrl.toString(),
+          )}`
+        : ``
+    }`,
   );
 
   opn(urlToOpen, { wait: false }).catch(() => {
@@ -671,7 +686,9 @@ async function askForWizardLogin(options: {
     }, 180_000);
   });
 
-  loginSpinner.stop('Login complete.');
+  loginSpinner.stop(
+    `Login complete. ${options.signup ? 'Welcome to PostHog! 🎉' : ''}`,
+  );
   analytics.setTag('opened-wizard-link', true);
   analytics.setDistinctId(data.distinctId);
 
@@ -1000,13 +1017,15 @@ interface CreatePROptions {
   title?: string;
   body?: string;
   installDir: string;
+  integration: Integration;
 }
 
 export async function createPRFromNewBranch({
   title = PR_CONFIG.defaultTitle,
   body = PR_CONFIG.defaultBody,
   installDir,
-}: CreatePROptions): Promise<void> {
+  integration,
+}: CreatePROptions): Promise<string | undefined> {
   return traceStep('create-pr', async () => {
     if (!isInGitRepo()) {
       clack.log.warn('Not in a git repository. Cannot create a pull request.');
@@ -1020,6 +1039,7 @@ export async function createPRFromNewBranch({
       analytics.capture('wizard interaction', {
         action: 'failed to get current branch',
         error: error instanceof Error ? error?.message : 'Unknown error',
+        integration,
       });
       return;
     }
@@ -1048,6 +1068,8 @@ export async function createPRFromNewBranch({
     } catch {
       analytics.capture('wizard interaction', {
         action: 'not logged into github',
+        error: 'Not authenticated with GitHub CLI',
+        integration,
       });
       return;
     }
@@ -1071,6 +1093,7 @@ export async function createPRFromNewBranch({
       analytics.capture('wizard interaction', {
         action: 'branch already exists',
         error: _error instanceof Error ? _error?.message : 'Unknown error',
+        integration,
       });
       return;
     }
@@ -1123,6 +1146,7 @@ export async function createPRFromNewBranch({
           createBranchError instanceof Error
             ? createBranchError?.message
             : 'Unknown error',
+        integration,
       });
       return;
     }
@@ -1150,6 +1174,7 @@ export async function createPRFromNewBranch({
         action: 'failed to commit changes',
         error:
           commitError instanceof Error ? commitError?.message : 'Unknown error',
+        integration,
       });
       return;
     }
@@ -1178,6 +1203,7 @@ export async function createPRFromNewBranch({
         action: 'failed to push branch',
         error:
           pushError instanceof Error ? pushError?.message : 'Unknown error',
+        integration,
       });
       return;
     }
@@ -1187,8 +1213,10 @@ export async function createPRFromNewBranch({
     prSpinner.start(
       `Creating a PR on branch '${newBranch}' with base '${baseBranch}'...`,
     );
+
+    let result = '';
+
     try {
-      let result = '';
       await new Promise<void>((resolve, reject) => {
         childProcess.exec(
           `gh pr create --base ${baseBranch} --head ${newBranch} --title "${title}" --body "${body}"`,
@@ -1217,6 +1245,7 @@ export async function createPRFromNewBranch({
       analytics.capture('wizard interaction', {
         action: 'failed to create pr',
         error: prError instanceof Error ? prError?.message : 'Unknown error',
+        integration,
       });
       return;
     }
@@ -1225,6 +1254,9 @@ export async function createPRFromNewBranch({
       action: 'created pr',
       branch: newBranch,
       base_branch: baseBranch,
+      integration,
     });
+
+    return result;
   });
 }
