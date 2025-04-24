@@ -31,7 +31,7 @@ import {
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
 import { addEditorRules } from '../utils/rules/add-editor-rules';
-import { getOutroMessage } from '../lib/messages';
+import { getOutroMessage, getPRDescription } from '../lib/messages';
 
 export async function runReactWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -138,9 +138,15 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     default: options.default,
   });
 
+  const prDescription = getPRDescription({
+    integration: Integration.react,
+    addedEditorRules,
+  });
+
   const prUrl = await createPRFromNewBranch({
     installDir: options.installDir,
     integration: Integration.react,
+    body: prDescription,
   });
 
   const outroMessage = getOutroMessage({

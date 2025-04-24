@@ -33,7 +33,7 @@ import {
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
 import { addEditorRules } from '../utils/rules/add-editor-rules';
-import { getOutroMessage } from '../lib/messages';
+import { getOutroMessage, getPRDescription } from '../lib/messages';
 
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -152,9 +152,15 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     default: options.default,
   });
 
+  const prDescription = getPRDescription({
+    integration: Integration.nextjs,
+    addedEditorRules,
+  });
+
   const prUrl = await createPRFromNewBranch({
     installDir: options.installDir,
     integration: Integration.nextjs,
+    body: prDescription,
   });
 
   const outroMessage = getOutroMessage({
