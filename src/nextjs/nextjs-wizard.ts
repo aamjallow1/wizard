@@ -153,10 +153,11 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   });
 
   clack.outro(`
-${chalk.green('Successfully installed PostHog!')} ${`\n\n${aiConsent
+${chalk.green('Successfully installed PostHog!')} ${`\n\n${
+    aiConsent
       ? `Note: This uses experimental AI to setup your project. It might have got it wrong, please check!\n`
       : ``
-    }
+  }
 ${chalk.cyan('Changes made:')}
 • Installed posthog-js & posthog-node packages
 • Initialized PostHog, and added pageview tracking
@@ -171,13 +172,13 @@ ${chalk.yellow('Next steps:')}
 • Upload environment variables to your production environment
 
 You should validate your setup by (re)starting your dev environment (e.g. ${chalk.cyan(
-      `${packageManagerForOutro.runScriptCommand} dev`,
-    )})`}
+    `${packageManagerForOutro.runScriptCommand} dev`,
+  )})`}
 
     
 ${chalk.blue(
-      `Learn more about PostHog + Next.js: https://posthog.com/docs/libraries/next-js`,
-    )}
+  `Learn more about PostHog + Next.js: https://posthog.com/docs/libraries/next-js`,
+)}
 
 ${chalk.dim(`If you encounter any issues, let us know here: ${ISSUES_URL}`)}`);
 
