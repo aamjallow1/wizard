@@ -5,6 +5,7 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
+  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -135,6 +136,10 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     rulesName: 'react-rules.md',
     integration: Integration.react,
     default: options.default,
+  });
+
+  await createPRFromNewBranch({
+    installDir: options.installDir,
   });
 
   clack.outro(`

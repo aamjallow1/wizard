@@ -5,6 +5,7 @@ import {
   abort,
   askForAIConsent,
   confirmContinueIfNoOrDirtyGitRepo,
+  createPRFromNewBranch,
   ensurePackageIsInstalled,
   getOrAskForProjectData,
   getPackageDotJson,
@@ -150,6 +151,10 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     installDir: options.installDir,
     integration: Integration.nextjs,
     default: options.default,
+  });
+
+  await createPRFromNewBranch({
+    installDir: options.installDir,
   });
 
   clack.outro(`

@@ -1021,12 +1021,57 @@ export async function createPRFromNewBranch({
       return;
     }
 
-    // if (baseBranch !== 'main') {
+    // if (!['main', 'master'].includes(baseBranch)) {
     //   clack.log.info(
-    //     `Current branch is "${baseBranch}". Skipping PR creation since we're not on "main".`,
+    //     `Current branch is "${baseBranch}". Skipping PR creation since we're not on "main" or "master".`,
     //   );
     //   return;
     // }
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        childProcess.exec(
+          'gh auth status',
+          { cwd: installDir },
+          (err, _stdout, stderr) => {
+            if (err) {
+              reject(new Error(stderr || 'Not authenticated with GitHub CLI'));
+            } else {
+              resolve();
+            }
+          },
+        );
+      });
+    } catch {
+      clack.log.warn(
+        'Not logged into GitHub - skipping automatic PR creation.',
+      );
+      return;
+    }
+
+    const createPR = await abortIfCancelled(
+      clack.select({
+        message: 'Would you like to create a PR for this integration?',
+        initialValue: true,
+        options: [
+          {
+            value: true,
+            label: 'Yes',
+            hint: 'We will create a PR for you',
+          },
+          {
+            value: false,
+            label: 'No',
+            hint: 'You can create a PR manually later',
+          },
+        ],
+      }),
+    );
+
+    if (!createPR) {
+      clack.log.info('Skipping PR creation');
+      return;
+    }
 
     const newBranch = PR_CONFIG.defaultBranchName;
     try {
