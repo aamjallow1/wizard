@@ -96,7 +96,7 @@ export async function addOrUpdateEnvironmentVariablesStep({
         return {
           relativeEnvFilePath,
           addedEnvVariables,
-          addedGitignore
+          addedGitignore,
         };
       }
     } else {
@@ -128,7 +128,7 @@ export async function addOrUpdateEnvironmentVariablesStep({
         return {
           relativeEnvFilePath,
           addedEnvVariables,
-          addedGitignore
+          addedGitignore,
         };
       }
     }
@@ -176,7 +176,7 @@ export async function addOrUpdateEnvironmentVariablesStep({
           return {
             relativeEnvFilePath,
             addedEnvVariables,
-            addedGitignore
+            addedGitignore,
           };
         }
       }

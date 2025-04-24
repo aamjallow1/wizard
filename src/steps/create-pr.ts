@@ -208,7 +208,8 @@ export async function createPRStep({
     } catch (stageError: unknown) {
       analytics.capture('wizard interaction', {
         action: 'failed to stage changes',
-        error: stageError instanceof Error ? stageError?.message : 'Unknown error',
+        error:
+          stageError instanceof Error ? stageError?.message : 'Unknown error',
         integration,
       });
       clack.log.warn('Failed to stage changes. Aborting PR creation 🚶‍➡️');
@@ -219,7 +220,9 @@ export async function createPRStep({
     try {
       const hasEnvFiles = await checkForEnvFiles(installDir);
       if (hasEnvFiles) {
-        clack.log.warn('Found .env files in staged changes. Aborting PR creation to prevent exposing sensitive data 🔐');
+        clack.log.warn(
+          'Found .env files in staged changes. Aborting PR creation to prevent exposing sensitive data 🔐',
+        );
         analytics.capture('wizard interaction', {
           action: 'skipped pr creation',
           reason: 'env files detected',
@@ -228,10 +231,15 @@ export async function createPRStep({
         return;
       }
     } catch (envCheckError: unknown) {
-      clack.log.warn('Failed to check for .env files. Aborting PR creation 🚶‍➡️');
+      clack.log.warn(
+        'Failed to check for .env files. Aborting PR creation 🚶‍➡️',
+      );
       analytics.capture('wizard interaction', {
         action: 'env check failed',
-        error: envCheckError instanceof Error ? envCheckError?.message : 'Unknown error',
+        error:
+          envCheckError instanceof Error
+            ? envCheckError?.message
+            : 'Unknown error',
         integration,
       });
       return;
@@ -255,7 +263,9 @@ export async function createPRStep({
         );
       });
     } catch (commitError: unknown) {
-      commitSpinner.stop('Failed to commit changes. Aborting PR creation 🚶‍➡️');
+      commitSpinner.stop(
+        'Failed to commit changes. Aborting PR creation 🚶‍➡️',
+      );
       analytics.capture('wizard interaction', {
         action: 'failed to commit changes',
         error:
@@ -328,7 +338,9 @@ export async function createPRStep({
         )}`,
       );
     } catch (prError: unknown) {
-      prSpinner.stop(`Failed to create PR on branch '${newBranch}'. Aborting PR creation 🚶‍➡️`);
+      prSpinner.stop(
+        `Failed to create PR on branch '${newBranch}'. Aborting PR creation 🚶‍➡️`,
+      );
       analytics.capture('wizard interaction', {
         action: 'failed to create pr',
         error: prError instanceof Error ? prError?.message : 'Unknown error',
