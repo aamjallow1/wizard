@@ -1166,7 +1166,7 @@ export async function createPRFromNewBranch({
       `Creating a PR on branch '${newBranch}' with base '${baseBranch}'...`,
     );
     try {
-      let prUrl = '';
+      let result = '';
       await new Promise<void>((resolve, reject) => {
         childProcess.exec(
           `gh pr create --base ${baseBranch} --head ${newBranch} --title "${title}" --body "${body}" --json url`,
@@ -1176,8 +1176,7 @@ export async function createPRFromNewBranch({
               reject(new Error(`Failed to create PR: ${stderr}`));
             } else {
               try {
-                const result = JSON.parse(stdout);
-                prUrl = result.url;
+                result = stdout;
                 resolve();
               } catch (parseError) {
                 reject(new Error('Failed to parse PR URL from response'));
@@ -1186,11 +1185,9 @@ export async function createPRFromNewBranch({
           },
         );
       });
-      prSpinner.stop(
-        `Successfully created PR! 🎉\n\nReview your changes here: ${chalk.cyan(
-          prUrl,
-        )}`,
-      );
+      prSpinner.stop(`Successfully created PR! 🎉`);
+
+      clack.log.info(result);
     } catch (prError: any) {
       prSpinner.stop(`Failed to create PR on branch '${newBranch}'.`);
       clack.log.warn(prError.message);
