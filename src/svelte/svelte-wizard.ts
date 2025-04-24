@@ -147,8 +147,8 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     integration: Integration.svelte,
     cloudRegion,
     addedEditorRules,
-    packageManager: packageManagerForOutro
-  })
+    packageManager: packageManagerForOutro,
+  });
 
   clack.outro(outroMessage);
 

@@ -81,19 +81,19 @@ export async function runReactNativeWizard(
 
   const packagesToInstall = isUsingExpo
     ? [
-      'posthog-react-native',
-      'posthog-react-native-session-replay',
-      'expo-file-system',
-      'expo-application',
-      'expo-device',
-      'expo-localization',
-    ]
+        'posthog-react-native',
+        'posthog-react-native-session-replay',
+        'expo-file-system',
+        'expo-application',
+        'expo-device',
+        'expo-localization',
+      ]
     : [
-      'posthog-react-native',
-      '@react-native-async-storage/async-storage',
-      'react-native-device-info',
-      'react-native-localize',
-    ];
+        'posthog-react-native',
+        '@react-native-async-storage/async-storage',
+        'react-native-device-info',
+        'react-native-localize',
+      ];
 
   for (const packageName of packagesToInstall) {
     await installPackage({
@@ -120,7 +120,8 @@ export async function runReactNativeWizard(
   });
 
   clack.log.info(
-    `Reviewing PostHog documentation for ${isUsingExpo ? 'Expo' : 'React Native'
+    `Reviewing PostHog documentation for ${
+      isUsingExpo ? 'Expo' : 'React Native'
     }`,
   );
 
@@ -153,14 +154,16 @@ export async function runReactNativeWizard(
     default: options.default,
   });
 
-  const packageManagerForOutro = await getPackageManager({ installDir: options.installDir });
+  const packageManagerForOutro = await getPackageManager({
+    installDir: options.installDir,
+  });
 
   const outroMessage = getOutroMessage({
     options,
     integration: Integration.reactNative,
     cloudRegion,
     addedEditorRules,
-    packageManager: packageManagerForOutro
+    packageManager: packageManagerForOutro,
   });
 
   clack.outro(outroMessage);
