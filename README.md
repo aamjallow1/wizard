@@ -43,7 +43,7 @@ The following CLI arguments are available:
 
 # Steal this code
 
-While the wizard works great on its own, we also find the approach used by this project is [a powerful way to improve AI agent coding sessions](envoy post). Agents can run CLI tools, which means that conventional code like this can participate in the AI revolution as well – with all the benefits and control that conventional code implies.
+While the wizard works great on its own, we also find the approach used by this project is [a powerful way to improve AI agent coding sessions](https://posthog.com/blog/envoy-wizard-llm-agent). Agents can run CLI tools, which means that conventional code like this can participate in the AI revolution as well – with all the benefits and control that conventional code implies.
 
 If you want to use this code as a starting place for your own project, here's a quick explainer on its structure.
 
