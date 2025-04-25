@@ -17,7 +17,7 @@ To use the wizard, you can run it directly using:
 npx @posthog/wizard
 ```
 
-Currently the wizard can be used for React, NextJS, Svelte and React Native
+Currently the wizard can be used for **React, NextJS, Svelte and React Native**
 projects. If you have other integrations you would like the wizard to support,
 please open a [GitHub issue](https://github.com/posthog/wizard/issues)!
 
@@ -40,3 +40,52 @@ The following CLI arguments are available:
 > Note: A large amount of the scaffolding for this came from the amazing Sentry
 > wizard, which you can find [here](https://github.com/getsentry/sentry-wizard)
 > 💖
+
+# Steal this code
+
+While the wizard works great on its own, we also find the approach used by this project is [a powerful way to improve AI agent coding sessions](envoy post). Agents can run CLI tools, which means that conventional code like this can participate in the AI revolution as well – with all the benefits and control that conventional code implies.
+
+If you want to use this code as a starting place for your own project, here's a quick explainer on its structure.
+
+## Entrypoint: `run.ts`
+
+The entrypoint for this tool is `run.ts`. Use this file to interpret arguments and set up the general flow of the application.
+
+## Analytics
+
+Did you know you can capture PostHog analytics even for ancillary products like a command line tool? `src/utils/analytics.ts` is a great example of how to do it.
+
+This file wraps `posthog-node` with some convenience functions to set up an analytics session and log events. We can see the usage and outcomes of this wizard alongside all of our other PostHog product data, and this is very powerful. For example: we could show in-product surveys to people who have used the wizard to improve the experience.
+
+## Leave rules behind
+
+Supporting agent sessions after we leave is important. There are plenty of ways to break or misconfigure PostHog, so guarding against this is key.
+
+`src/utils/rules/add-editor-rules.ts` demonstrates how to dynamically construct rules files and store them in the project's `.cursor/rules` directory.
+
+## Prompts and LLM interactions
+
+LLM agent sessions are *anti-deterministic*: really, anything can happen.
+
+But using LLMs for code generation is really advantageous: they can interpret existing code at scale and then modify it reliably.
+
+*If* they are well prompted.
+
+`src/lib/prompts.ts` demonstrates how to wrap a deterministic fence around a chaotic process. Every wizard session gets the same prompt, tailored to the specific files in the project.
+
+These prompts are channeled using `src/utils/query.ts` to an LLM interface we host. This gives us more control: we can be certain of the model version and provider which interprets the prompts and modifies the files. This way, we can find the right tools for the job and again, apply them consistently.
+
+When we make improvements, these are available instantly to all users of the wizard, no training delays or other ambiguity.
+
+## Publishing your tool
+
+To make your version of a tool usable with a one-line `npx` command:
+
+1. Edit `package.json`, especially details like `name`, `version`.
+2. Run `[npm publish](https://docs.npmjs.com/cli/v7/commands/npm-publish)` from your project directory
+3. Now you can run it with `npx yourpackagename`
+
+
+
+
+
