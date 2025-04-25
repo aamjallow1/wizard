@@ -81,8 +81,8 @@ When we make improvements, these are available instantly to all users of the wiz
 
 To make your version of a tool usable with a one-line `npx` command:
 
-1. Edit `package.json`, especially details like `name`, `version`.
-2. Run `[npm publish](https://docs.npmjs.com/cli/v7/commands/npm-publish)` from your project directory
+1. Edit `package.json`, especially details like `name`, `version`
+2. Run [`npm publish`](https://docs.npmjs.com/cli/v7/commands/npm-publish) from your project directory
 3. Now you can run it with `npx yourpackagename`
 
 
