@@ -93,7 +93,10 @@ describe('Git operations', () => {
       );
 
       const result = await checkForEnvFiles(testDir);
-      expect(result).toEqual({ success: true, data: false });
+      expect(result).toEqual({
+        success: false,
+        error: 'command failed with exit code 1',
+      });
     });
 
     it('should handle grep errors correctly', async () => {

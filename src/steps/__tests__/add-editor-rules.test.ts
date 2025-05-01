@@ -105,12 +105,15 @@ describe('addEditorRules', () => {
     expect(readFileMock).toHaveBeenCalledTimes(2);
     expect(readFileMock).toHaveBeenNthCalledWith(
       1,
-      path.join('/Users/js/github/wizard/src/steps', mockOptions.rulesName),
+      path.join(
+        '/Users/js/github/wizard/src/utils/rules',
+        mockOptions.rulesName,
+      ),
       'utf8',
     );
     expect(readFileMock).toHaveBeenNthCalledWith(
       2,
-      path.join('/Users/js/github/wizard/src/steps', 'universal.md'),
+      path.join('/Users/js/github/wizard/src/utils/rules', 'universal.md'),
       'utf8',
     );
 
@@ -129,7 +132,9 @@ describe('addEditorRules', () => {
 
     // Check if success message was logged
     expect(infoMock).toHaveBeenCalledWith(
-      `Added Cursor rules to ${chalk.bold.cyan('.cursor/rules')}`,
+      `Added Cursor rules to ${chalk.bold.cyan(
+        '.cursor/rules/posthog-integration.mdc',
+      )}`,
     );
   });
 
@@ -212,11 +217,14 @@ A given feature flag should be used in as few places as possible. Do not increas
 
     // Check if correct files were read
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join('/Users/js/github/wizard/src/steps', mockOptions.rulesName),
+      path.join(
+        '/Users/js/github/wizard/src/utils/rules',
+        mockOptions.rulesName,
+      ),
       'utf8',
     );
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join('/Users/js/github/wizard/src/steps', 'universal.md'),
+      path.join('/Users/js/github/wizard/src/utils/rules', 'universal.md'),
       'utf8',
     );
 
@@ -235,7 +243,9 @@ A given feature flag should be used in as few places as possible. Do not increas
 
     // Check if success message was logged
     expect(infoMock).toHaveBeenCalledWith(
-      `Added Cursor rules to ${chalk.bold.cyan('.cursor/rules')}`,
+      `Added Cursor rules to ${chalk.bold.cyan(
+        '.cursor/rules/posthog-integration.mdc',
+      )}`,
     );
   });
 
