@@ -25,21 +25,21 @@ export const addEditorRulesStep = async ({
     const addEditorRules: boolean = defaultAddEditorRules
       ? true
       : await abortIfCancelled(
-        clack.select({
-          message:
-            'Would you like to have PostHog added to your Cursor rules?',
-          options: [
-            {
-              label: 'Yes, please!',
-              value: true,
-            },
-            {
-              label: 'No, thanks',
-              value: false,
-            },
-          ],
-        }),
-      );
+          clack.select({
+            message:
+              'Would you like to have PostHog added to your Cursor rules?',
+            options: [
+              {
+                label: 'Yes, please!',
+                value: true,
+              },
+              {
+                label: 'No, thanks',
+                value: false,
+              },
+            ],
+          }),
+        );
 
     if (!addEditorRules) {
       return false;
