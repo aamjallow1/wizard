@@ -113,7 +113,7 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  await addOrUpdateEnvironmentVariablesStep({
+  const { relativeEnvFilePath, addedEnvVariables } = await addOrUpdateEnvironmentVariablesStep({
     variables: {
       [envVarPrefix + 'POSTHOG_KEY']: projectApiKey,
       [envVarPrefix + 'POSTHOG_HOST']: host,
@@ -143,6 +143,7 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
     addedEditorRules,
     packageManager: packageManagerForOutro,
+    envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
   });
 
   clack.outro(outroMessage);

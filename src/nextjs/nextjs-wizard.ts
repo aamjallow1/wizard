@@ -129,7 +129,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  await addOrUpdateEnvironmentVariablesStep({
+  const { relativeEnvFilePath, addedEnvVariables } = await addOrUpdateEnvironmentVariablesStep({
     variables: {
       NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
       NEXT_PUBLIC_POSTHOG_HOST: host,
@@ -165,6 +165,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
     addedEditorRules,
     packageManager: packageManagerForOutro,
+    envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
     prUrl,
   });
 

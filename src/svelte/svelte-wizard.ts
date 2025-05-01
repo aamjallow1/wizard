@@ -117,7 +117,7 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  await addOrUpdateEnvironmentVariablesStep({
+  const { relativeEnvFilePath, addedEnvVariables } = await addOrUpdateEnvironmentVariablesStep({
     variables: {
       ['PUBLIC_POSTHOG_KEY']: projectApiKey,
       ['PUBLIC_POSTHOG_HOST']: host,
@@ -147,6 +147,7 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
     addedEditorRules,
     packageManager: packageManagerForOutro,
+    envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
   });
 
   clack.outro(outroMessage);
