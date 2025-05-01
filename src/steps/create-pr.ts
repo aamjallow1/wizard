@@ -78,19 +78,17 @@ export async function checkForEnvFiles(
   installDir: string,
 ): Promise<GitCommandResult<boolean>> {
   const result = await execGitCommand(
-    'git diff --cached --name-only | grep "^\\.env"',
+    'git diff --cached --name-only',
     installDir,
   );
-  // grep returns exit code 1 when no matches found
-  if (result.error?.includes('command failed with exit code 1')) {
-    return { success: true, data: false };
-  }
-  // Propagate grep errors as failures
   if (!result.success) {
     return { success: false, error: result.error };
   }
-  // Matches found
-  return { success: true, data: Boolean(result.data) };
+  const files = result.data
+    ? result.data.split('\n').map(f => f.trim()).filter(Boolean)
+    : [];
+  const hasEnv = files.some(f => f.startsWith('.env'));
+  return { success: true, data: hasEnv };
 }
 
 export async function commitChanges(
@@ -150,15 +148,15 @@ export async function createPRStep({
     }
     const baseBranch = currentBranchResult.data;
 
-    if (!['main', 'master'].includes(baseBranch)) {
-      analytics.capture('wizard interaction', {
-        action: 'skipping pr creation',
-        reason: 'not on main or master',
-        base_branch: baseBranch,
-        integration,
-      });
-      return;
-    }
+    // if (!['main', 'master'].includes(baseBranch)) {
+    //   analytics.capture('wizard interaction', {
+    //     action: 'skipping pr creation',
+    //     reason: 'not on main or master',
+    //     base_branch: baseBranch,
+    //     integration,
+    //   });
+    //   return;
+    // }
 
     // Check GitHub auth
     const authResult = await checkGitHubAuth(installDir);
