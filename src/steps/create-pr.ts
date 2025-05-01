@@ -141,28 +141,33 @@ export async function createPRStep({
     const currentBranchResult = await getCurrentBranch(installDir);
     if (!currentBranchResult.success || !currentBranchResult.data) {
       analytics.capture('wizard interaction', {
-        action: 'failed to get current branch',
+        action: 'skipping pr creation',
+        reason: 'failed to get current branch',
         error: currentBranchResult.error,
         integration,
       });
-      clack.log.warn(
-        'Failed to get current branch. Aborting PR creation 🚶‍➡️',
-      );
       return;
     }
     const baseBranch = currentBranchResult.data;
+
+    if (!['main', 'master'].includes(baseBranch)) {
+      analytics.capture('wizard interaction', {
+        action: 'skipping pr creation',
+        reason: 'not on main or master',
+        base_branch: baseBranch,
+        integration,
+      });
+      return;
+    }
 
     // Check GitHub auth
     const authResult = await checkGitHubAuth(installDir);
     if (!authResult.success) {
       analytics.capture('wizard interaction', {
-        action: 'not logged into github',
-        error: 'Not authenticated with GitHub CLI',
+        action: 'skipping pr creation',
+        reason: 'not logged into github',
         integration,
       });
-      clack.log.warn(
-        'Not authenticated with GitHub CLI. Aborting PR creation 🚶‍➡️',
-      );
       return;
     }
 
@@ -172,13 +177,11 @@ export async function createPRStep({
     const branchExistsResult = await checkBranchExists(newBranch, installDir);
     if (!branchExistsResult.success) {
       analytics.capture('wizard interaction', {
-        action: 'branch already exists',
+        action: 'skipping pr creation',
+        reason: 'branch already exists',
         error: branchExistsResult.error,
         integration,
       });
-      clack.log.warn(
-        `Branch '${newBranch}' already exists. Aborting PR creation 🚶‍➡️`,
-      );
       return;
     }
 
@@ -216,7 +219,8 @@ export async function createPRStep({
     const createBranchResult = await createBranch(newBranch, installDir);
     if (!createBranchResult.success) {
       analytics.capture('wizard interaction', {
-        action: 'failed to create branch',
+        action: 'aborting pr creation',
+        reason: 'failed to create branch',
         error: createBranchResult.error,
         integration,
       });
@@ -228,7 +232,8 @@ export async function createPRStep({
     const stageResult = await stageChanges(installDir);
     if (!stageResult.success) {
       analytics.capture('wizard interaction', {
-        action: 'failed to stage changes',
+        action: 'aborting pr creation',
+        reason: 'failed to stage changes',
         error: stageResult.error,
         integration,
       });
@@ -240,7 +245,8 @@ export async function createPRStep({
     const envCheckResult = await checkForEnvFiles(installDir);
     if (!envCheckResult.success) {
       analytics.capture('wizard interaction', {
-        action: 'env check failed',
+        action: 'aborting pr creation',
+        reason: 'failed to check for env files in staged changes',
         error: envCheckResult.error,
         integration,
       });
@@ -255,8 +261,8 @@ export async function createPRStep({
         'Found .env files in staged changes. Aborting PR creation to prevent exposing sensitive data 🔐',
       );
       analytics.capture('wizard interaction', {
-        action: 'skipped pr creation',
-        reason: 'env files detected',
+        action: 'aborting pr creation',
+        reason: 'env files detected in staged changes',
         integration,
       });
       return;
@@ -271,7 +277,8 @@ export async function createPRStep({
         'Failed to commit changes. Aborting PR creation 🚶‍➡️',
       );
       analytics.capture('wizard interaction', {
-        action: 'failed to commit changes',
+        action: 'aborting pr creation',
+        reason: 'failed to commit changes',
         error: commitResult.error,
         integration,
       });
@@ -286,7 +293,8 @@ export async function createPRStep({
     if (!pushResult.success) {
       pushSpinner.stop('Failed to push branch. Aborting PR creation 🚶‍➡️');
       analytics.capture('wizard interaction', {
-        action: 'failed to push branch',
+        action: 'aborting pr creation',
+        reason: 'failed to push branch',
         error: pushResult.error,
         integration,
       });
@@ -311,7 +319,8 @@ export async function createPRStep({
         `Failed to create PR on branch '${newBranch}'. Aborting PR creation 🚶‍➡️`,
       );
       analytics.capture('wizard interaction', {
-        action: 'failed to create pr',
+        action: 'aborting pr creation',
+        reason: 'failed to create pr',
         error: prResult.error,
         integration,
       });
@@ -326,7 +335,7 @@ export async function createPRStep({
     );
 
     analytics.capture('wizard interaction', {
-      action: 'created pr',
+      action: 'pr created',
       branch: newBranch,
       base_branch: baseBranch,
       integration,
