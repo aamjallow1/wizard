@@ -158,15 +158,19 @@ export async function createPRStep({
     }
     const baseBranch = currentBranchResult.data;
 
-    // if (!['main', 'master'].includes(baseBranch)) {
-    //   analytics.capture('wizard interaction', {
-    //     action: 'skipping pr creation',
-    //     reason: 'not on main or master',
-    //     base_branch: baseBranch,
-    //     integration,
-    //   });
-    //   return;
-    // }
+    if (!['main', 'master'].includes(baseBranch)) {
+      analytics.capture('wizard interaction', {
+        action: 'skipping pr creation',
+        reason: 'not on main or master',
+        base_branch: baseBranch,
+        integration,
+      });
+
+      if (DEBUG) {
+        clack.log.error(`Not on main or master. Skipping PR creation.`);
+      }
+      return;
+    }
 
     // Check GitHub auth
     const authResult = await checkGitHubAuth(installDir);
