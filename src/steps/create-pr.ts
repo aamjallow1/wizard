@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import type { Integration } from '../lib/constants';
+import { DEBUG, type Integration } from '../lib/constants';
 import { traceStep } from '../telemetry';
 import { analytics } from '../utils/analytics';
 import clack from '../utils/clack';
@@ -147,6 +147,13 @@ export async function createPRStep({
         error: currentBranchResult.error,
         integration,
       });
+
+      if (DEBUG) {
+        clack.log.error(
+          currentBranchResult.error ?? 'Failed to get current branch',
+        );
+      }
+
       return;
     }
     const baseBranch = currentBranchResult.data;
@@ -169,6 +176,11 @@ export async function createPRStep({
         reason: 'not logged into github',
         integration,
       });
+
+      if (DEBUG) {
+        clack.log.error(authResult.error ?? 'Failed to check github auth');
+      }
+
       return;
     }
 
@@ -183,6 +195,13 @@ export async function createPRStep({
         error: branchExistsResult.error,
         integration,
       });
+
+      if (DEBUG) {
+        clack.log.error(
+          branchExistsResult.error ?? 'Failed to check branch exists',
+        );
+      }
+
       return;
     }
 
