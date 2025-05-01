@@ -105,15 +105,12 @@ describe('addEditorRules', () => {
     expect(readFileMock).toHaveBeenCalledTimes(2);
     expect(readFileMock).toHaveBeenNthCalledWith(
       1,
-      path.join(
-        '/Users/js/github/wizard/src/utils/rules',
-        mockOptions.rulesName,
-      ),
+      expect.stringMatching(/react-rules\.md$/),
       'utf8',
     );
     expect(readFileMock).toHaveBeenNthCalledWith(
       2,
-      path.join('/Users/js/github/wizard/src/utils/rules', 'universal.md'),
+      expect.stringMatching(/universal\.md$/),
       'utf8',
     );
 
@@ -217,14 +214,11 @@ A given feature flag should be used in as few places as possible. Do not increas
 
     // Check if correct files were read
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join(
-        '/Users/js/github/wizard/src/utils/rules',
-        mockOptions.rulesName,
-      ),
+      expect.stringMatching(/react-rules\.md$/),
       'utf8',
     );
     expect(readFileMock).toHaveBeenCalledWith(
-      path.join('/Users/js/github/wizard/src/utils/rules', 'universal.md'),
+      expect.stringMatching(/universal\.md$/),
       'utf8',
     );
 
