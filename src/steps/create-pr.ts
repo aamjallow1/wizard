@@ -85,9 +85,12 @@ export async function checkForEnvFiles(
     return { success: false, error: result.error };
   }
   const files = result.data
-    ? result.data.split('\n').map(f => f.trim()).filter(Boolean)
+    ? result.data
+        .split('\n')
+        .map((f) => f.trim())
+        .filter(Boolean)
     : [];
-  const hasEnv = files.some(f => f.startsWith('.env'));
+  const hasEnv = files.some((f) => f.startsWith('.env'));
   return { success: true, data: hasEnv };
 }
 
