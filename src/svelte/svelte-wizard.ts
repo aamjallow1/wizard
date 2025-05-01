@@ -117,14 +117,15 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  const { relativeEnvFilePath, addedEnvVariables } = await addOrUpdateEnvironmentVariablesStep({
-    variables: {
-      ['PUBLIC_POSTHOG_KEY']: projectApiKey,
-      ['PUBLIC_POSTHOG_HOST']: host,
-    },
-    installDir: options.installDir,
-    integration: Integration.svelte,
-  });
+  const { relativeEnvFilePath, addedEnvVariables } =
+    await addOrUpdateEnvironmentVariablesStep({
+      variables: {
+        ['PUBLIC_POSTHOG_KEY']: projectApiKey,
+        ['PUBLIC_POSTHOG_HOST']: host,
+      },
+      installDir: options.installDir,
+      integration: Integration.svelte,
+    });
 
   const packageManagerForOutro =
     packageManagerFromInstallStep ?? (await getPackageManager(options));

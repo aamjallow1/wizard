@@ -113,14 +113,15 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  const { relativeEnvFilePath, addedEnvVariables } = await addOrUpdateEnvironmentVariablesStep({
-    variables: {
-      [envVarPrefix + 'POSTHOG_KEY']: projectApiKey,
-      [envVarPrefix + 'POSTHOG_HOST']: host,
-    },
-    installDir: options.installDir,
-    integration: Integration.react,
-  });
+  const { relativeEnvFilePath, addedEnvVariables } =
+    await addOrUpdateEnvironmentVariablesStep({
+      variables: {
+        [envVarPrefix + 'POSTHOG_KEY']: projectApiKey,
+        [envVarPrefix + 'POSTHOG_HOST']: host,
+      },
+      installDir: options.installDir,
+      integration: Integration.react,
+    });
 
   const packageManagerForOutro =
     packageManagerFromInstallStep ?? (await getPackageManager(options));

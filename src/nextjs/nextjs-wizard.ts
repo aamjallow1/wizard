@@ -129,14 +129,15 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
-  const { relativeEnvFilePath, addedEnvVariables } = await addOrUpdateEnvironmentVariablesStep({
-    variables: {
-      NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
-      NEXT_PUBLIC_POSTHOG_HOST: host,
-    },
-    installDir: options.installDir,
-    integration: Integration.nextjs,
-  });
+  const { relativeEnvFilePath, addedEnvVariables } =
+    await addOrUpdateEnvironmentVariablesStep({
+      variables: {
+        NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+        NEXT_PUBLIC_POSTHOG_HOST: host,
+      },
+      installDir: options.installDir,
+      integration: Integration.nextjs,
+    });
 
   const packageManagerForOutro =
     packageManagerFromInstallStep ?? (await getPackageManager(options));
