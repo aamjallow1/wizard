@@ -113,6 +113,24 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     `Reviewing PostHog documentation for ${getNextJsRouterName(router)}`,
   );
 
+  const { relativeEnvFilePath, addedEnvVariables } =
+    await addOrUpdateEnvironmentVariablesStep({
+      variables: {
+        NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+        NEXT_PUBLIC_POSTHOG_HOST: host,
+      },
+      installDir: options.installDir,
+      integration: Integration.nextjs,
+    });
+
+  await uploadEnvironmentVariablesStep(
+    {
+      NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+      NEXT_PUBLIC_POSTHOG_HOST: host,
+    },
+    options,
+  );
+
   const filesToChange = await getFilesToChange({
     integration: Integration.nextjs,
     relevantFiles,
@@ -129,16 +147,6 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     documentation: installationDocumentation,
     cloudRegion,
   });
-
-  const { relativeEnvFilePath, addedEnvVariables } =
-    await addOrUpdateEnvironmentVariablesStep({
-      variables: {
-        NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
-        NEXT_PUBLIC_POSTHOG_HOST: host,
-      },
-      installDir: options.installDir,
-      integration: Integration.nextjs,
-    });
 
   const packageManagerForOutro =
     packageManagerFromInstallStep ?? (await getPackageManager(options));

@@ -1,7 +1,4 @@
-pnpm fix
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
 
-# Check for unstaged changes after fixing
-if ! git diff --quiet; then
-  echo "❌ Code was modified by fix. Please re-stage your changes."
-  exit 1
-fi
+npx lint-staged
