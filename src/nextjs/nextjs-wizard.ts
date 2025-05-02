@@ -161,10 +161,13 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     addedEditorRules,
   });
 
-  await uploadEnvironmentVariablesStep({
-    NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
-    NEXT_PUBLIC_POSTHOG_HOST: host,
-  }, options);
+  await uploadEnvironmentVariablesStep(
+    {
+      NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+      NEXT_PUBLIC_POSTHOG_HOST: host,
+    },
+    options,
+  );
 
   const outroMessage = getOutroMessage({
     options,

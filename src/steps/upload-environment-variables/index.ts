@@ -1,14 +1,18 @@
-import { traceStep } from "../../telemetry";
-import { analytics } from "../../utils/analytics";
-import clack from "../../utils/clack";
-import { abortIfCancelled } from "../../utils/clack-utils";
-import type { WizardOptions } from "../../utils/types";
-import { EnvironmentProvider } from "./EnvironmentProvider";
-import { VercelEnvironmentProvider } from "./providers/vercel";
+import { traceStep } from '../../telemetry';
+import { analytics } from '../../utils/analytics';
+import clack from '../../utils/clack';
+import { abortIfCancelled } from '../../utils/clack-utils';
+import type { WizardOptions } from '../../utils/types';
+import { EnvironmentProvider } from './EnvironmentProvider';
+import { VercelEnvironmentProvider } from './providers/vercel';
 
-
-export const uploadEnvironmentVariablesStep = async (envVars: Record<string, string>, options: WizardOptions) => {
-  const providers: EnvironmentProvider[] = [new VercelEnvironmentProvider(options)];
+export const uploadEnvironmentVariablesStep = async (
+  envVars: Record<string, string>,
+  options: WizardOptions,
+) => {
+  const providers: EnvironmentProvider[] = [
+    new VercelEnvironmentProvider(options),
+  ];
 
   let provider: EnvironmentProvider | null = null;
 
@@ -21,8 +25,8 @@ export const uploadEnvironmentVariablesStep = async (envVars: Record<string, str
 
   if (!provider) {
     analytics.capture('wizard interaction', {
-      action: "not uploading environment variables",
-      reason: "no environment provider found",
+      action: 'not uploading environment variables',
+      reason: 'no environment provider found',
     });
     return;
   }
@@ -39,8 +43,8 @@ export const uploadEnvironmentVariablesStep = async (envVars: Record<string, str
 
   if (!upload) {
     analytics.capture('wizard interaction', {
-      action: "not uploading environment variables",
-      reason: "user declined to upload",
+      action: 'not uploading environment variables',
+      reason: 'user declined to upload',
       provider: provider.name,
     });
     return;
@@ -51,8 +55,7 @@ export const uploadEnvironmentVariablesStep = async (envVars: Record<string, str
   });
 
   analytics.capture('wizard interaction', {
-    action: "uploaded environment variables",
+    action: 'uploaded environment variables',
     provider: provider.name,
   });
 };
-

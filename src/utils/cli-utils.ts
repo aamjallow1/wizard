@@ -2,13 +2,14 @@ import chalk from 'chalk';
 import { spawn } from 'child_process';
 import clack from './clack';
 
-
 export const runCommandInteractively = async (
   command: string,
   args: string[] = [],
-  options: { cwd?: string; env?: NodeJS.ProcessEnv } = {}
+  options: { cwd?: string; env?: NodeJS.ProcessEnv } = {},
 ): Promise<void> => {
-  clack.log.info(`\n🔧 Running: ${chalk.bold(chalk.cyan(`${command} ${args.join(' ')}`))}\n`);
+  clack.log.info(
+    `\n🔧 Running: ${chalk.bold(chalk.cyan(`${command} ${args.join(' ')}`))}\n`,
+  );
 
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args, {
