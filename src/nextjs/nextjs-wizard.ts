@@ -36,6 +36,7 @@ import {
   createPRStep,
   runPrettierStep,
 } from '../steps';
+import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
     wizardName: 'PostHog Next.js Wizard',
@@ -159,6 +160,11 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
     addedEditorRules,
   });
+
+  await uploadEnvironmentVariablesStep({
+    NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+    NEXT_PUBLIC_POSTHOG_HOST: host,
+  }, options);
 
   const outroMessage = getOutroMessage({
     options,
