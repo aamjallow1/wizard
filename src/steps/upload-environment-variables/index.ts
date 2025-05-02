@@ -1,3 +1,4 @@
+import type { Integration } from '../../lib/constants';
 import { traceStep } from '../../telemetry';
 import { analytics } from '../../utils/analytics';
 import clack from '../../utils/clack';
@@ -8,7 +9,13 @@ import { VercelEnvironmentProvider } from './providers/vercel';
 
 export const uploadEnvironmentVariablesStep = async (
   envVars: Record<string, string>,
-  options: WizardOptions,
+  {
+    integration,
+    options,
+  }: {
+    integration: Integration;
+    options: WizardOptions;
+  },
 ): Promise<string[]> => {
   const providers: EnvironmentProvider[] = [
     new VercelEnvironmentProvider(options),
@@ -27,6 +34,7 @@ export const uploadEnvironmentVariablesStep = async (
     analytics.capture('wizard interaction', {
       action: 'not uploading environment variables',
       reason: 'no environment provider found',
+      integration,
     });
     return [];
   }
@@ -54,6 +62,7 @@ export const uploadEnvironmentVariablesStep = async (
       action: 'not uploading environment variables',
       reason: 'user declined to upload',
       provider: provider.name,
+      integration,
     });
     return [];
   }
@@ -68,6 +77,7 @@ export const uploadEnvironmentVariablesStep = async (
   analytics.capture('wizard interaction', {
     action: 'uploaded environment variables',
     provider: provider.name,
+    integration,
   });
 
   return Object.keys(results).filter((key) => results[key]);

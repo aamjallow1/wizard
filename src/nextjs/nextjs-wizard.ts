@@ -138,13 +138,6 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  const addedEditorRules = await addEditorRulesStep({
-    rulesName: 'next-rules.md',
-    installDir: options.installDir,
-    integration: Integration.nextjs,
-    default: options.default,
-  });
-
   const { relativeEnvFilePath, addedEnvVariables } =
     await addOrUpdateEnvironmentVariablesStep({
       variables: {
@@ -160,8 +153,18 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
       NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
       NEXT_PUBLIC_POSTHOG_HOST: host,
     },
-    options,
+    {
+      integration: Integration.nextjs,
+      options,
+    },
   );
+
+  const addedEditorRules = await addEditorRulesStep({
+    rulesName: 'next-rules.md',
+    installDir: options.installDir,
+    integration: Integration.nextjs,
+    default: options.default,
+  });
 
   const prUrl = await createPRStep({
     installDir: options.installDir,

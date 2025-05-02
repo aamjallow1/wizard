@@ -144,7 +144,10 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
       [envVarPrefix + 'POSTHOG_KEY']: projectApiKey,
       [envVarPrefix + 'POSTHOG_HOST']: host,
     },
-    options,
+    {
+      integration: Integration.react,
+      options,
+    },
   );
 
   const outroMessage = getOutroMessage({
