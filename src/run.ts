@@ -13,6 +13,7 @@ import { analytics } from './utils/analytics';
 import { runSvelteWizard } from './svelte/svelte-wizard';
 import { runReactNativeWizard } from './react-native/react-native-wizard';
 import { EventEmitter } from 'events';
+import chalk from 'chalk';
 
 EventEmitter.defaultMaxListeners = 50;
 
@@ -27,7 +28,16 @@ type Args = {
 };
 
 export async function run(argv: Args) {
-  await runWizard(argv);
+  try {
+    await runWizard(argv);
+  } catch (error) {
+    clack.log.error(
+      `Something went wrong. You can read the documentation for PostHog at ${chalk.cyan(
+        'https://posthog.com/docs',
+      )} to setup PostHog manually.`,
+    );
+    process.exit(1);
+  }
 }
 
 async function runWizard(argv: Args) {

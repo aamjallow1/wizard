@@ -3,6 +3,7 @@ import fg from 'fast-glob';
 import { abortIfCancelled } from '../utils/clack-utils';
 import clack from '../utils/clack';
 import type { WizardOptions } from '../utils/types';
+import { Integration } from '../lib/constants';
 
 export function getNextJsVersionBucket(version: string | undefined) {
   if (!version) {
@@ -82,6 +83,7 @@ export async function getNextJsRouter({
         },
       ],
     }),
+    Integration.nextjs,
   );
 
   return result;

@@ -39,6 +39,7 @@ export const addEditorRulesStep = async ({
               },
             ],
           }),
+          integration,
         );
 
     if (!addEditorRules) {

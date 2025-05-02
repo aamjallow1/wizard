@@ -232,6 +232,7 @@ export async function createPRStep({
           },
         ],
       }),
+      integration,
     );
 
     if (!createPR) {
