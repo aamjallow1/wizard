@@ -56,22 +56,22 @@ export const getOutroMessage = ({
   const integrationConfig = INTEGRATION_CONFIG[integration];
 
   const changes = [
-    ...(addedEditorRules ? `Added Cursor rules for PostHog` : ''),
-    ...(prUrl ? `Created a PR for your changes: ${chalk.cyan(prUrl)}` : ''),
-    ...(envFileChanged
+    addedEditorRules ? `Added Cursor rules for PostHog` : '',
+    prUrl ? `Created a PR for your changes: ${chalk.cyan(prUrl)}` : '',
+    envFileChanged
       ? `Added your Project API key to your ${envFileChanged} file`
-      : ''),
-    ...uploadedEnvVars.map(
-      (envVar) => `Uploaded ${envVar} to your hosting provider`,
-    ),
-  ];
+      : '',
+    uploadedEnvVars.length > 0
+      ? `Uploaded your Project API key to your hosting provider`
+      : '',
+  ].filter(Boolean);
 
   const nextSteps = [
-    ...(uploadedEnvVars.length === 0
+    uploadedEnvVars.length === 0
       ? `Upload your Project API key to your hosting provider`
-      : ''),
-    ...(!prUrl ? `Create a PR for your changes` : ''),
-  ];
+      : '',
+    !prUrl ? `Create a PR for your changes` : '',
+  ].filter(Boolean);
 
   return `
 ${chalk.green('Successfully installed PostHog!')}  
@@ -83,6 +83,7 @@ ${changes.map((change) => `• ${change}`).join('\n')}
 ${chalk.yellow('Next steps:')}
 ${integrationConfig.nextSteps}
 ${nextSteps.map((step) => `• ${step}`).join('\n')}
+
 Learn more about PostHog + ${integrationConfig.name}: ${chalk.cyan(
     integrationConfig.docsUrl,
   )}

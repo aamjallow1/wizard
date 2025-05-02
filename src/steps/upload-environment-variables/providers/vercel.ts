@@ -3,9 +3,9 @@ import { EnvironmentProvider } from '../EnvironmentProvider';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { WizardOptions } from '../../../utils/types';
-import { runCommandInteractively } from '../../../utils/cli-utils';
 import clack from '../../../utils/clack';
 import chalk from 'chalk';
+import { analytics } from '../../../utils/analytics';
 
 export class VercelEnvironmentProvider extends EnvironmentProvider {
   name = 'Vercel';
@@ -16,9 +16,12 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async detect(): Promise<boolean> {
-    return (
-      this.hasVercelCli() && this.isProjectLinked() && this.isAuthenticated()
-    );
+    const vercelDetected =
+      this.hasVercelCli() && this.isProjectLinked() && this.isAuthenticated();
+
+    analytics.setTag('vercel-detected', vercelDetected);
+
+    return vercelDetected;
   }
 
   hasDotVercelDir(): boolean {
@@ -29,8 +32,10 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
   hasVercelCli(): boolean {
     try {
       execSync('vercel --version', { stdio: 'ignore' });
+      analytics.setTag('vercel-cli-installed', true);
       return true;
     } catch {
+      analytics.setTag('vercel-cli-installed', false);
       return false;
     }
   }
@@ -39,14 +44,14 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
     return ['production', 'preview', 'development'];
   }
 
-  get dotEnvPath(): string {
-    return path.join(this.options.installDir, '.env');
-  }
-
   isProjectLinked(): boolean {
-    return fs.existsSync(
+    const isProjectLinked = fs.existsSync(
       path.join(this.options.installDir, '.vercel', 'project.json'),
     );
+
+    analytics.setTag('vercel-project-linked', isProjectLinked);
+
+    return isProjectLinked;
   }
 
   isAuthenticated(): boolean {
@@ -67,16 +72,13 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
       output.includes('vercel login') ||
       result.status !== 0
     ) {
+      analytics.setTag('vercel-authenticated', false);
       return false;
     }
 
-    return true;
-  }
+    analytics.setTag('vercel-authenticated', true);
 
-  async linkProject(): Promise<void> {
-    await runCommandInteractively('vercel link', undefined, {
-      cwd: this.options.installDir,
-    });
+    return true;
   }
 
   async uploadEnvironmentVariable(

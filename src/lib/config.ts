@@ -35,7 +35,7 @@ export const INTEGRATION_CONFIG = {
     filterFilesRules: '',
     docsUrl: 'https://posthog.com/docs/libraries/next-js',
     defaultChanges:
-      '• Installed posthog-js & posthog-node packages\n• Initialized PostHog, and added pageview tracking\n• Created a PostHogClient to use PostHog server-side\n• Setup a reverse proxy to avoid ad blockers blocking analytics requests',
+      '• Installed posthog-js & posthog-node packages\n• Initialized PostHog and added pageview tracking\n• Created a PostHogClient to use PostHog server-side\n• Setup a reverse proxy to avoid ad blockers blocking analytics requests',
     nextSteps:
       '• Call posthog.identify() when a user signs into your app\n• Call posthog.capture() to capture custom events in your app',
   },

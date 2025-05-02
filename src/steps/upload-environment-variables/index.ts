@@ -33,7 +33,7 @@ export const uploadEnvironmentVariablesStep = async (
 
   const upload: boolean = await abortIfCancelled(
     clack.select({
-      message: `It looks like you are using ${provider.name}. Would you like to upload the PostHog environment variables?`,
+      message: `It looks like you are using ${provider.name}. Would you like to upload the environment variables?`,
       options: [
         {
           value: true,
