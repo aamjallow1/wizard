@@ -163,6 +163,7 @@ export async function runReactNativeWizard(
     cloudRegion,
     addedEditorRules,
     packageManager: packageManagerForOutro,
+    uploadedEnvVars: [],
   });
 
   clack.outro(outroMessage);

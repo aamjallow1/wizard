@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { WizardOptions } from '../../../utils/types';
 import { runCommandInteractively } from '../../../utils/cli-utils';
+import clack from '../../../utils/clack';
+import chalk from 'chalk';
 
 export class VercelEnvironmentProvider extends EnvironmentProvider {
   name = 'Vercel';
@@ -34,7 +36,7 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
   }
 
   get environments(): string[] {
-    return ['production'];
+    return ['production', 'preview', 'development'];
   }
 
   get dotEnvPath(): string {
@@ -77,26 +79,80 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
     });
   }
 
-  async uploadEnvVars(vars: Record<string, string>): Promise<void> {
+  async uploadEnvironmentVariable(
+    key: string,
+    value: string,
+    environment: string,
+  ): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      const proc = spawn('vercel', ['env', 'add', key, environment], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+
+      let stderr = '';
+      proc.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      proc.stdin.write(value + '\n');
+      proc.stdin.end();
+
+      proc.on('close', (code) => {
+        if (
+          stderr.includes('already exists') ||
+          stderr.includes('already been added') ||
+          stderr.includes('vercel env rm')
+        ) {
+          reject(
+            new Error(
+              `❌ Environment variable ${chalk.cyan(key)} already exists in ${
+                this.name
+              }. Please upload it manually.`,
+            ),
+          );
+        } else if (code === 0) {
+          resolve();
+        } else {
+          reject(
+            new Error(
+              `❌ Failed to upload environment variable ${chalk.cyan(key)} to ${
+                this.name
+              }. Please upload it manually.`,
+            ),
+          );
+        }
+      });
+    });
+  }
+
+  async uploadEnvVars(
+    vars: Record<string, string>,
+  ): Promise<Record<string, boolean>> {
+    const results: Record<string, boolean> = {};
+
     for (const [key, value] of Object.entries(vars)) {
-      for (const environment of this.environments) {
-        await new Promise<void>((resolve, reject) => {
-          const proc = spawn(
-            'vercel',
-            ['env', 'add', key, environment, '--force'],
-            {
-              stdio: ['pipe', 'inherit', 'inherit'],
-            },
+      const spinner = clack.spinner();
+
+      spinner.start(`Uploading ${chalk.cyan(key)} to ${this.name}...`);
+      await Promise.all(
+        this.environments.map((environment) =>
+          this.uploadEnvironmentVariable(key, value, environment),
+        ),
+      )
+        .then(() => {
+          spinner.stop(`✅ Uploaded ${chalk.cyan(key)} to ${this.name}`);
+          results[key] = true;
+        })
+        .catch((err) => {
+          spinner.stop(
+            err instanceof Error
+              ? err.message
+              : `❌ Failed to upload environment variables to ${this.name}. Please upload it manually.`,
           );
-          proc.stdin.write(value + '\n');
-          proc.stdin.end();
-          proc.on('close', (code) =>
-            code === 0
-              ? resolve()
-              : reject(new Error(`Failed to upload ${key}`)),
-          );
+          results[key] = false;
         });
-      }
     }
+
+    return results;
   }
 }

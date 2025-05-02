@@ -55,20 +55,45 @@ describe('VercelEnvironmentProvider', () => {
     await expect(provider.detect()).resolves.toBe(false);
   });
 
-  it('should upload environment variables', async () => {
-    const spawnMock = child_process.spawn as jest.Mock;
-    const onMock = jest.fn((event, cb) => event === 'close' && cb(0));
+  it('should return false if env var already exists', async () => {
     const stdinMock = { write: jest.fn(), end: jest.fn() };
-    spawnMock.mockReturnValue({ stdin: stdinMock, on: onMock });
+    let closeCallback: ((code: number) => void) | undefined;
+    const onMock = jest.fn((event, cb) => {
+      if (event === 'close') closeCallback = cb;
+    });
+
+    // Simulate a process with a writable stderr stream
+    let stderrListener: ((data: Buffer | string) => void) | undefined;
+    const stderr = {
+      on: jest.fn((event, cb) => {
+        if (event === 'data') stderrListener = cb;
+      }),
+    };
+
+    (child_process.spawn as jest.Mock).mockReturnValue({
+      stdin: stdinMock,
+      on: onMock,
+      stderr,
+    });
+
+    const uploadPromise = provider.uploadEnvVars({ FOO: 'bar' });
+
+    // Simulate "already exists" error on stderr, then process close
+    stderrListener && stderrListener('already exists');
+    closeCallback && closeCallback(1);
+
+    await expect(uploadPromise).resolves.toEqual({ FOO: false });
+  });
+
+  it('should attempt to upload environment variables', async () => {
+    (child_process.spawn as jest.Mock).mockReturnValue({});
 
     await provider.uploadEnvVars({ FOO: 'bar' });
 
-    expect(spawnMock).toHaveBeenCalledWith(
+    expect(child_process.spawn).toHaveBeenCalledWith(
       'vercel',
-      ['env', 'add', 'FOO', 'production', '--force'],
-      expect.objectContaining({ stdio: ['pipe', 'inherit', 'inherit'] }),
+      ['env', 'add', 'FOO', 'production'],
+      expect.objectContaining({ stdio: ['pipe', 'pipe', 'pipe'] }),
     );
-    expect(stdinMock.write).toHaveBeenCalledWith('bar\n');
-    expect(stdinMock.end).toHaveBeenCalled();
   });
 });

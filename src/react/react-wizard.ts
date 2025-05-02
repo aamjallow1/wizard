@@ -31,6 +31,7 @@ import {
   addOrUpdateEnvironmentVariablesStep,
   runPrettierStep,
 } from '../steps';
+import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
 
 export async function runReactWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -138,6 +139,14 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     default: options.default,
   });
 
+  const uploadedEnvVars = await uploadEnvironmentVariablesStep(
+    {
+      [envVarPrefix + 'POSTHOG_KEY']: projectApiKey,
+      [envVarPrefix + 'POSTHOG_HOST']: host,
+    },
+    options,
+  );
+
   const outroMessage = getOutroMessage({
     options,
     integration: Integration.react,
@@ -145,6 +154,7 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     addedEditorRules,
     packageManager: packageManagerForOutro,
     envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
+    uploadedEnvVars,
   });
 
   clack.outro(outroMessage);

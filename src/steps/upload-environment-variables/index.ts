@@ -9,7 +9,7 @@ import { VercelEnvironmentProvider } from './providers/vercel';
 export const uploadEnvironmentVariablesStep = async (
   envVars: Record<string, string>,
   options: WizardOptions,
-) => {
+): Promise<string[]> => {
   const providers: EnvironmentProvider[] = [
     new VercelEnvironmentProvider(options),
   ];
@@ -28,15 +28,23 @@ export const uploadEnvironmentVariablesStep = async (
       action: 'not uploading environment variables',
       reason: 'no environment provider found',
     });
-    return;
+    return [];
   }
 
   const upload: boolean = await abortIfCancelled(
     clack.select({
       message: `It looks like you are using ${provider.name}. Would you like to upload the PostHog environment variables?`,
       options: [
-        { value: true, label: 'Yes' },
-        { value: false, label: 'No' },
+        {
+          value: true,
+          label: 'Yes',
+          hint: `Upload the environment variables to ${provider.name}`,
+        },
+        {
+          value: false,
+          label: 'No',
+          hint: `Skip uploading environment variables to ${provider.name} - you can do this later`,
+        },
       ],
     }),
   );
@@ -47,15 +55,20 @@ export const uploadEnvironmentVariablesStep = async (
       reason: 'user declined to upload',
       provider: provider.name,
     });
-    return;
+    return [];
   }
 
-  await traceStep('uploading environment variables', async () => {
-    await provider.uploadEnvVars(envVars);
-  });
+  const results = await traceStep(
+    'uploading environment variables',
+    async () => {
+      return await provider.uploadEnvVars(envVars);
+    },
+  );
 
   analytics.capture('wizard interaction', {
     action: 'uploaded environment variables',
     provider: provider.name,
   });
+
+  return Object.keys(results).filter((key) => results[key]);
 };

@@ -17,7 +17,7 @@ export const getPRDescription = ({
   return `This PR adds an integration for PostHog.
 
   The following changes were made:
-  ${integrationConfig.changes}
+  ${integrationConfig.defaultChanges}
   ${addedEditorRules ? `• Added Cursor rules for PostHog\n` : ''}
   
   
@@ -37,6 +37,7 @@ export const getOutroMessage = ({
   addedEditorRules,
   packageManager,
   envFileChanged,
+  uploadedEnvVars,
   prUrl,
 }: {
   options: WizardOptions;
@@ -46,6 +47,7 @@ export const getOutroMessage = ({
   packageManager?: PackageManager;
   envFileChanged?: string;
   prUrl?: string;
+  uploadedEnvVars: string[];
 }) => {
   const continueUrl = options.signup
     ? `${getCloudUrlFromRegion(cloudRegion)}/products?source=wizard`
@@ -53,21 +55,34 @@ export const getOutroMessage = ({
 
   const integrationConfig = INTEGRATION_CONFIG[integration];
 
+  const changes = [
+    ...(addedEditorRules ? `Added Cursor rules for PostHog` : ''),
+    ...(prUrl ? `Created a PR for your changes: ${chalk.cyan(prUrl)}` : ''),
+    ...(envFileChanged
+      ? `Added your Project API key to your ${envFileChanged} file`
+      : ''),
+    ...uploadedEnvVars.map(
+      (envVar) => `Uploaded ${envVar} to your hosting provider`,
+    ),
+  ];
+
+  const nextSteps = [
+    ...(uploadedEnvVars.length === 0
+      ? `Upload your Project API key to your hosting provider`
+      : ''),
+    ...(!prUrl ? `Create a PR for your changes` : ''),
+  ];
+
   return `
 ${chalk.green('Successfully installed PostHog!')}  
   
 ${chalk.cyan('Changes made:')}
-${integrationConfig.changes}
-${addedEditorRules ? `• Added Cursor rules for PostHog\n` : ''}${
-    prUrl ? `• Created a PR for your changes: ${chalk.cyan(prUrl)}\n` : ''
-  }${
-    envFileChanged
-      ? `• Added your Project API key to your ${envFileChanged} file\n`
-      : ''
-  }
+${integrationConfig.defaultChanges}
+${changes.map((change) => `• ${change}`).join('\n')}
+
 ${chalk.yellow('Next steps:')}
 ${integrationConfig.nextSteps}
-
+${nextSteps.map((step) => `• ${step}`).join('\n')}
 Learn more about PostHog + ${integrationConfig.name}: ${chalk.cyan(
     integrationConfig.docsUrl,
   )}

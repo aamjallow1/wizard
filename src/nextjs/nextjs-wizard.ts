@@ -113,24 +113,6 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     `Reviewing PostHog documentation for ${getNextJsRouterName(router)}`,
   );
 
-  const { relativeEnvFilePath, addedEnvVariables } =
-    await addOrUpdateEnvironmentVariablesStep({
-      variables: {
-        NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
-        NEXT_PUBLIC_POSTHOG_HOST: host,
-      },
-      installDir: options.installDir,
-      integration: Integration.nextjs,
-    });
-
-  await uploadEnvironmentVariablesStep(
-    {
-      NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
-      NEXT_PUBLIC_POSTHOG_HOST: host,
-    },
-    options,
-  );
-
   const filesToChange = await getFilesToChange({
     integration: Integration.nextjs,
     relevantFiles,
@@ -163,19 +145,29 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     default: options.default,
   });
 
-  const prUrl = await createPRStep({
-    installDir: options.installDir,
-    integration: Integration.nextjs,
-    addedEditorRules,
-  });
+  const { relativeEnvFilePath, addedEnvVariables } =
+    await addOrUpdateEnvironmentVariablesStep({
+      variables: {
+        NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+        NEXT_PUBLIC_POSTHOG_HOST: host,
+      },
+      installDir: options.installDir,
+      integration: Integration.nextjs,
+    });
 
-  await uploadEnvironmentVariablesStep(
+  const uploadedEnvVars = await uploadEnvironmentVariablesStep(
     {
       NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
       NEXT_PUBLIC_POSTHOG_HOST: host,
     },
     options,
   );
+
+  const prUrl = await createPRStep({
+    installDir: options.installDir,
+    integration: Integration.nextjs,
+    addedEditorRules,
+  });
 
   const outroMessage = getOutroMessage({
     options,
@@ -185,6 +177,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     packageManager: packageManagerForOutro,
     envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
     prUrl,
+    uploadedEnvVars,
   });
 
   clack.outro(outroMessage);
