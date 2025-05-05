@@ -9,6 +9,7 @@ import { analytics } from '../../../utils/analytics';
 
 export class VercelEnvironmentProvider extends EnvironmentProvider {
   name = 'Vercel';
+  environments = ['production', 'preview', 'development'];
 
   constructor(options: WizardOptions) {
     super(options);
@@ -38,10 +39,6 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
       analytics.setTag('vercel-cli-installed', false);
       return false;
     }
-  }
-
-  get environments(): string[] {
-    return ['production', 'preview', 'development'];
   }
 
   isProjectLinked(): boolean {
