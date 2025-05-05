@@ -32,10 +32,12 @@ export const addEditorRulesStep = async ({
               {
                 label: 'Yes, please!',
                 value: true,
+                hint: 'Add PostHog to your Cursor rules',
               },
               {
                 label: 'No, thanks',
                 value: false,
+                hint: 'Skip adding PostHog to your Cursor rules',
               },
             ],
           }),
