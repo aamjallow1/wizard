@@ -36,6 +36,7 @@ import {
   createPRStep,
   runPrettierStep,
 } from '../steps';
+import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
     wizardName: 'PostHog Next.js Wizard',
@@ -129,6 +130,14 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     cloudRegion,
   });
 
+  const packageManagerForOutro =
+    packageManagerFromInstallStep ?? (await getPackageManager(options));
+
+  await runPrettierStep({
+    installDir: options.installDir,
+    integration: Integration.nextjs,
+  });
+
   const { relativeEnvFilePath, addedEnvVariables } =
     await addOrUpdateEnvironmentVariablesStep({
       variables: {
@@ -139,13 +148,16 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
       integration: Integration.nextjs,
     });
 
-  const packageManagerForOutro =
-    packageManagerFromInstallStep ?? (await getPackageManager(options));
-
-  await runPrettierStep({
-    installDir: options.installDir,
-    integration: Integration.nextjs,
-  });
+  const uploadedEnvVars = await uploadEnvironmentVariablesStep(
+    {
+      NEXT_PUBLIC_POSTHOG_KEY: projectApiKey,
+      NEXT_PUBLIC_POSTHOG_HOST: host,
+    },
+    {
+      integration: Integration.nextjs,
+      options,
+    },
+  );
 
   const addedEditorRules = await addEditorRulesStep({
     rulesName: 'next-rules.md',
@@ -168,6 +180,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     packageManager: packageManagerForOutro,
     envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
     prUrl,
+    uploadedEnvVars,
   });
 
   clack.outro(outroMessage);

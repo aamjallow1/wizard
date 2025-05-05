@@ -149,6 +149,7 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     addedEditorRules,
     packageManager: packageManagerForOutro,
     envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
+    uploadedEnvVars: [],
   });
 
   clack.outro(outroMessage);
