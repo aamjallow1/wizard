@@ -53,7 +53,7 @@ The entrypoint for this tool is `run.ts`. Use this file to interpret arguments a
 
 ## Analytics
 
-Did you know you can capture PostHog analytics even for ancillary products like a command line tool? `src/utils/analytics.ts` is a great example of how to do it.
+Did you know you can capture PostHog events even for smaller, supporting products like a command line tool? `src/utils/analytics.ts` is a great example of how to do it.
 
 This file wraps `posthog-node` with some convenience functions to set up an analytics session and log events. We can see the usage and outcomes of this wizard alongside all of our other PostHog product data, and this is very powerful. For example: we could show in-product surveys to people who have used the wizard to improve the experience.
 
@@ -74,6 +74,8 @@ But using LLMs for code generation is really advantageous: they can interpret ex
 `src/lib/prompts.ts` demonstrates how to wrap a deterministic fence around a chaotic process. Every wizard session gets the same prompt, tailored to the specific files in the project.
 
 These prompts are channeled using `src/utils/query.ts` to an LLM interface we host. This gives us more control: we can be certain of the model version and provider which interpret the prompts and modify the files. This way, we can find the right tools for the job and again, apply them consistently.
+
+This also allows us to pick up the bill on behalf of our customers.
 
 When we make improvements to this process, these are available instantly to all users of the wizard, no training delays or other ambiguity.
 
