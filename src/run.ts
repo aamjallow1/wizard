@@ -13,6 +13,7 @@ import { analytics } from './utils/analytics';
 import { runSvelteWizard } from './svelte/svelte-wizard';
 import { runReactNativeWizard } from './react-native/react-native-wizard';
 import { EventEmitter } from 'events';
+import chalk from 'chalk';
 
 EventEmitter.defaultMaxListeners = 50;
 
@@ -54,21 +55,30 @@ async function runWizard(argv: Args) {
 
   analytics.setTag('integration', integration);
 
-  switch (integration) {
-    case Integration.nextjs:
-      await runNextjsWizard(wizardOptions);
-      break;
-    case Integration.react:
-      await runReactWizard(wizardOptions);
-      break;
-    case Integration.svelte:
-      await runSvelteWizard(wizardOptions);
-      break;
-    case Integration.reactNative:
-      await runReactNativeWizard(wizardOptions);
-      break;
-    default:
-      clack.log.error('No setup wizard selected!');
+  try {
+    switch (integration) {
+      case Integration.nextjs:
+        await runNextjsWizard(wizardOptions);
+        break;
+      case Integration.react:
+        await runReactWizard(wizardOptions);
+        break;
+      case Integration.svelte:
+        await runSvelteWizard(wizardOptions);
+        break;
+      case Integration.reactNative:
+        await runReactNativeWizard(wizardOptions);
+        break;
+      default:
+        clack.log.error('No setup wizard selected!');
+    }
+  } catch (error) {
+    clack.log.error(
+      `Something went wrong. You can read the documentation for PostHog at ${chalk.cyan(
+        `${INTEGRATION_CONFIG[integration].docsUrl}`,
+      )} to setup PostHog manually.`,
+    );
+    process.exit(1);
   }
 }
 

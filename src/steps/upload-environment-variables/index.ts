@@ -55,6 +55,7 @@ export const uploadEnvironmentVariablesStep = async (
         },
       ],
     }),
+    integration,
   );
 
   if (!upload) {

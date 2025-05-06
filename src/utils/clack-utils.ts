@@ -21,10 +21,12 @@ import {
   DEFAULT_HOST_URL,
   DUMMY_PROJECT_API_KEY,
   ISSUES_URL,
+  type Integration,
 } from '../lib/constants';
 import { analytics } from './analytics';
 import clack from './clack';
 import { getCloudUrlFromRegion } from './urls';
+import { INTEGRATION_CONFIG } from '../lib/config';
 
 interface ProjectData {
   projectApiKey: string;
@@ -64,11 +66,20 @@ export async function abort(message?: string, status?: number): Promise<never> {
 
 export async function abortIfCancelled<T>(
   input: T | Promise<T>,
+  integration?: Integration,
 ): Promise<Exclude<T, symbol>> {
   await analytics.shutdown('cancelled');
 
   if (clack.isCancel(await input)) {
-    clack.cancel('Wizard setup cancelled.');
+    const docsUrl = integration
+      ? INTEGRATION_CONFIG[integration].docsUrl
+      : 'https://posthog.com/docs';
+
+    clack.cancel(
+      `Wizard setup cancelled. You can read the documentation for ${
+        integration ?? 'PostHog'
+      } at ${chalk.cyan(docsUrl)} to continue with the setup manually.`,
+    );
     process.exit(0);
   } else {
     return input as Exclude<T, symbol>;
