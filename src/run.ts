@@ -28,16 +28,7 @@ type Args = {
 };
 
 export async function run(argv: Args) {
-  try {
-    await runWizard(argv);
-  } catch (error) {
-    clack.log.error(
-      `Something went wrong. You can read the documentation for PostHog at ${chalk.cyan(
-        'https://posthog.com/docs',
-      )} to setup PostHog manually.`,
-    );
-    process.exit(1);
-  }
+  await runWizard(argv);
 }
 
 async function runWizard(argv: Args) {
@@ -64,21 +55,30 @@ async function runWizard(argv: Args) {
 
   analytics.setTag('integration', integration);
 
-  switch (integration) {
-    case Integration.nextjs:
-      await runNextjsWizard(wizardOptions);
-      break;
-    case Integration.react:
-      await runReactWizard(wizardOptions);
-      break;
-    case Integration.svelte:
-      await runSvelteWizard(wizardOptions);
-      break;
-    case Integration.reactNative:
-      await runReactNativeWizard(wizardOptions);
-      break;
-    default:
-      clack.log.error('No setup wizard selected!');
+  try {
+    switch (integration) {
+      case Integration.nextjs:
+        await runNextjsWizard(wizardOptions);
+        break;
+      case Integration.react:
+        await runReactWizard(wizardOptions);
+        break;
+      case Integration.svelte:
+        await runSvelteWizard(wizardOptions);
+        break;
+      case Integration.reactNative:
+        await runReactNativeWizard(wizardOptions);
+        break;
+      default:
+        clack.log.error('No setup wizard selected!');
+    }
+  } catch (error) {
+    clack.log.error(
+      `Something went wrong. You can read the documentation for PostHog at ${chalk.cyan(
+        `${INTEGRATION_CONFIG[integration].docsUrl}`,
+      )} to setup PostHog manually.`,
+    );
+    process.exit(1);
   }
 }
 
