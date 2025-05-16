@@ -93,7 +93,7 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
         stderr += data.toString();
       });
 
-      proc.stdin.write(value + '\n');
+      proc.stdin.write(value);
       proc.stdin.end();
 
       proc.on('close', (code) => {
