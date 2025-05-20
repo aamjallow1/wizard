@@ -6,8 +6,8 @@
 > have any feedback, please drop an email to **joshua** [at] **posthog** [dot]
 > **com**.
 
-<h1>PostHog Wizard ✨</h1>
-<h4>The PostHog Wizard helps you quickly add PostHog to your project using AI.</h4>
+<h1>PostHog wizard ✨</h1>
+<h4>The PostHog wizard helps you quickly add PostHog to your project using AI.</h4>
 
 # Usage
 
