@@ -237,7 +237,7 @@ export async function confirmContinueIfPackageVersionNotSupported({
 
     clack.note(
       note ??
-        `Please upgrade to ${acceptableVersions} if you wish to use the PostHog Wizard.`,
+        `Please upgrade to ${acceptableVersions} if you wish to use the PostHog wizard.`,
     );
     const continueWithUnsupportedVersion = await abortIfCancelled(
       clack.confirm({
@@ -347,7 +347,7 @@ export async function installPackage({
           'Encountered the following error during installation:',
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         )}\n\n${e}\n\n${chalk.dim(
-          `The wizard has created a \`posthog-wizard-installation-error-*.log\` file. If you think this issue is caused by the PostHog Wizard, create an issue on GitHub and include the log file's content:\n${ISSUES_URL}`,
+          `The wizard has created a \`posthog-wizard-installation-error-*.log\` file. If you think this issue is caused by the PostHog wizard, create an issue on GitHub and include the log file's content:\n${ISSUES_URL}`,
         )}`,
       );
       await abort();
