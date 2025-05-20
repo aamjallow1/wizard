@@ -28,7 +28,8 @@ export const load = async () => {
       {
         api_host: PUBLIC_POSTHOG_HOST,
         capture_pageview: false,
-        capture_pageleave: false
+        capture_pageleave: false,
+        capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
       }
     )
   }

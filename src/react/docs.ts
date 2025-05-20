@@ -41,6 +41,7 @@ root.render(
       apiKey={${apiKeyText}}
       options={{
         api_host: ${hostText},
+        capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
         debug: ${
           envVarPrefix === 'VITE_PUBLIC_'
             ? 'import.meta.env.MODE === "development"'

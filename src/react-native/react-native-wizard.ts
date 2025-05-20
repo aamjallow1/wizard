@@ -32,7 +32,7 @@ export async function runReactNativeWizard(
   options: WizardOptions,
 ): Promise<void> {
   printWelcome({
-    wizardName: 'PostHog React Native Wizard',
+    wizardName: 'PostHog React Native wizard',
   });
 
   const aiConsent = await askForAIConsent(options);
