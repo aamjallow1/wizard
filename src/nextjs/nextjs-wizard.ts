@@ -39,7 +39,7 @@ import {
 import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
-    wizardName: 'PostHog Next.js Wizard',
+    wizardName: 'PostHog Next.js wizard',
   });
 
   const aiConsent = await askForAIConsent(options);

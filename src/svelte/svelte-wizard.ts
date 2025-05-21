@@ -30,7 +30,7 @@ import { addOrUpdateEnvironmentVariablesStep, runPrettierStep } from '../steps';
 
 export async function runSvelteWizard(options: WizardOptions): Promise<void> {
   printWelcome({
-    wizardName: 'PostHog Svelte Wizard',
+    wizardName: 'PostHog Svelte wizard',
   });
 
   const aiConsent = await askForAIConsent(options);

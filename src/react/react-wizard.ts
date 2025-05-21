@@ -35,7 +35,7 @@ import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-vari
 
 export async function runReactWizard(options: WizardOptions): Promise<void> {
   printWelcome({
-    wizardName: 'PostHog React Wizard',
+    wizardName: 'PostHog React wizard',
   });
 
   const aiConsent = await askForAIConsent(options);

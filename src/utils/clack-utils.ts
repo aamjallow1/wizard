@@ -625,7 +625,7 @@ async function askForWizardLogin(options: {
       );
 
       analytics.setTag('opened-wizard-link', false);
-      void abort('Please restart the Wizard and log in to complete the setup.');
+      void abort('Please restart the wizard and log in to complete the setup.');
     }, 180_000);
   });
 
