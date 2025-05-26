@@ -3,7 +3,6 @@ import { traceStep } from '../../telemetry';
 import { analytics } from '../../utils/analytics';
 import clack from '../../utils/clack';
 import { abortIfCancelled } from '../../utils/clack-utils';
-import { arrayToSentence } from '../../utils/helper-functions';
 import { MCPClient } from './MCPClient';
 import { CursorMCPClient } from './clients/cursor';
 import { ClaudeMCPClient } from './clients/claude';
@@ -35,9 +34,8 @@ export const addMCPServerToClientsStep = async (
 
   if (clientsToAdd.length === 0) {
     clack.log.info(
-      `Added PostHog MCP server to ${arrayToSentence(
-        clients.map((c) => c.name),
-      )}.`,
+      `The PostHog MCP server is already configured for:
+  ${clients.map((c) => `- ${c.name}`).join('\n  ')}`,
     );
     analytics.capture('wizard interaction', {
       action: 'mcp servers already configured',
@@ -62,9 +60,8 @@ export const addMCPServerToClientsStep = async (
   });
 
   clack.log.success(
-    `Added PostHog MCP server to ${arrayToSentence(
-      clientsToAdd.map((c) => c.name),
-    )}.`,
+    `Added PostHog MCP server to:
+  ${clientsToAdd.map((c) => `- ${c.name}`).join('\n  ')}`,
   );
 
   analytics.capture('wizard interaction', {

@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { DefaultMCPClientConfig, getDefaultServerConfig } from '../defaults';
 import { z } from 'zod';
+import { merge } from 'lodash';
 
 export const CursorMCPConfig = DefaultMCPClientConfig;
 
@@ -47,22 +48,28 @@ export class CursorMCPClient extends MCPClient {
 
     await fs.promises.mkdir(configDir, { recursive: true });
 
-    let config: CursorMCPConfig = { mcpServers: {} };
+    let existingConfig: CursorMCPConfig = { mcpServers: {} };
 
     if (fs.existsSync(configPath)) {
       try {
         const existingContent = await fs.promises.readFile(configPath, 'utf8');
-        config = CursorMCPConfig.parse(JSON.parse(existingContent));
+        existingConfig = CursorMCPConfig.parse(JSON.parse(existingContent));
       } catch {
-        config = { mcpServers: {} };
+        existingConfig = { mcpServers: {} };
       }
     }
 
-    config.mcpServers.posthog = getDefaultServerConfig(apiKey);
+    const newServerConfig = {
+      mcpServers: {
+        posthog: getDefaultServerConfig(apiKey),
+      },
+    };
+
+    const mergedConfig = merge({}, existingConfig, newServerConfig);
 
     await fs.promises.writeFile(
       configPath,
-      JSON.stringify(config, null, 2),
+      JSON.stringify(mergedConfig, null, 2),
       'utf8',
     );
   }
@@ -74,21 +81,24 @@ export class CursorMCPClient extends MCPClient {
       return;
     }
 
+    let config: CursorMCPConfig;
+
     try {
       const configContent = await fs.promises.readFile(configPath, 'utf8');
-      const config = CursorMCPConfig.parse(JSON.parse(configContent));
-
-      if (config.mcpServers && 'posthog' in config.mcpServers) {
-        delete config.mcpServers.posthog;
-
-        await fs.promises.writeFile(
-          configPath,
-          JSON.stringify(config, null, 2),
-          'utf8',
-        );
-      }
+      config = CursorMCPConfig.parse(JSON.parse(configContent));
     } catch {
       // If we can't read or parse the config, there's nothing to remove
+      return;
+    }
+
+    if (config.mcpServers && 'posthog' in config.mcpServers) {
+      delete config.mcpServers.posthog;
+
+      await fs.promises.writeFile(
+        configPath,
+        JSON.stringify(config, null, 2),
+        'utf8',
+      );
     }
   }
 }

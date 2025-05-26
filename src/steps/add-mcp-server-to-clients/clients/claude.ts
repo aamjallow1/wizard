@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { DefaultMCPClientConfig, getDefaultServerConfig } from '../defaults';
 import { z } from 'zod';
+import { merge } from 'lodash';
 
 export const ClaudeMCPConfig = DefaultMCPClientConfig;
 
@@ -69,22 +70,28 @@ export class ClaudeMCPClient extends MCPClient {
 
     await fs.promises.mkdir(configDir, { recursive: true });
 
-    let config: ClaudeMCPConfig = { mcpServers: {} };
+    let existingConfig: ClaudeMCPConfig = { mcpServers: {} };
 
     if (fs.existsSync(configPath)) {
       try {
         const existingContent = await fs.promises.readFile(configPath, 'utf8');
-        config = ClaudeMCPConfig.parse(JSON.parse(existingContent));
+        existingConfig = ClaudeMCPConfig.parse(JSON.parse(existingContent));
       } catch {
-        config = { mcpServers: {} };
+        existingConfig = { mcpServers: {} };
       }
     }
 
-    config.mcpServers.posthog = getDefaultServerConfig(apiKey);
+    const newServerConfig = {
+      mcpServers: {
+        posthog: getDefaultServerConfig(apiKey),
+      },
+    };
+
+    const mergedConfig = merge({}, existingConfig, newServerConfig);
 
     await fs.promises.writeFile(
       configPath,
-      JSON.stringify(config, null, 2),
+      JSON.stringify(mergedConfig, null, 2),
       'utf8',
     );
   }

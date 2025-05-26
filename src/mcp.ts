@@ -10,7 +10,6 @@ import {
   getOrAskForProjectData,
 } from './utils/clack-utils';
 import type { CloudRegion } from './utils/types';
-import { arrayToSentence } from './utils/helper-functions';
 
 export const runMCPInstall = async (options: {
   signup: boolean;
@@ -51,7 +50,8 @@ export const runMCPRemove = async () => {
     return;
   }
 
-  clack.outro(`PostHog MCP server removed from ${arrayToSentence(results)}.
+  clack.outro(`PostHog MCP server removed from:
+  ${results.map((c) => `- ${c}`).join('\n  ')}
   
   ${chalk.cyan(
     'You might need to restart your MCP clients to see the changes.',
