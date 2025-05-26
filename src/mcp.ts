@@ -19,7 +19,7 @@ export const runMCPInstall = async (options: {
 
   const cloudRegion = options.region ?? (await askForCloudRegion());
 
-  const { personalApiKey = 'helloworld' } = await getOrAskForProjectData({
+  const { personalApiKey } = await getOrAskForProjectData({
     signup: options.signup,
     cloudRegion,
   });
@@ -28,7 +28,7 @@ export const runMCPInstall = async (options: {
     await abort('Unable to create a personal API key.');
   }
 
-  await addMCPServerToClientsStep(personalApiKey, {});
+  await addMCPServerToClientsStep(personalApiKey as string, {});
 
   clack.outro(`PostHog MCP server added successfully.
 
