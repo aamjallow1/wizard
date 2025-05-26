@@ -91,13 +91,7 @@ yargs(hideBin(process.argv))
         'remove',
         'Remove PostHog MCP server from supported clients',
         (yargs) => {
-          return yargs.options({
-            debug: {
-              default: false,
-              describe: 'Enable verbose logging\nenv: POSTHOG_WIZARD_DEBUG',
-              type: 'boolean',
-            },
-          });
+          return yargs.options({});
         },
         () => {
           void runMCPRemove();
