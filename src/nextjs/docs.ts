@@ -9,9 +9,8 @@ export const getNextjsAppRouterDocs = ({
 }) => {
   return `
 ==============================
-FILE: PostHogProvider.${
-    language === 'typescript' ? 'tsx' : 'jsx'
-  } (put it somewhere where client files are, like the components folder)
+FILE: PostHogProvider.${language === 'typescript' ? 'tsx' : 'jsx'
+    } (put it somewhere where client files are, like the components folder)
 LOCATION: Wherever other providers are, or the components folder
 ==============================
 Changes:
@@ -31,7 +30,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
       api_host: "/ingest",
       ui_host: "${getUiHostFromHost(host)}",
-      capture_pageview: false, // We capture pageviews manually
+      capture_pageview: 'history_change',
       capture_pageleave: true, // Enable pageleave capture
       capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
       debug: process.env.NODE_ENV === "development",
@@ -43,34 +42,6 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       <SuspendedPostHogPageView />
       {children}
     </PHProvider>
-  )
-}
-
-
-function PostHogPageView() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const posthog = usePostHog()
-
-  useEffect(() => {
-    if (pathname && posthog) {
-      let url = window.origin + pathname
-      const search = searchParams.toString()
-      if (search) {
-        url += "?" + search
-      }
-      posthog.capture("$pageview", { "$current_url": url })
-    }
-  }, [pathname, searchParams, posthog])
-
-  return null
-}
-
-function SuspendedPostHogPageView() {
-  return (
-    <Suspense fallback={null}>
-      <PostHogPageView />
-    </Suspense>
   )
 }
 --------------------------------------------------
@@ -116,6 +87,7 @@ import { PostHog } from "posthog-node"
 export default function PostHogClient() {
   const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    capture_pageview: 'history_change',
     flushAt: 1,
     flushInterval: 0,
   })
@@ -169,9 +141,8 @@ export const getNextjsPagesRouterDocs = ({
   return `
 ==============================
 FILE: _app.${language === 'typescript' ? 'tsx' : 'jsx'}
-LOCATION: Wherever the root _app.${
-    language === 'typescript' ? 'tsx' : 'jsx'
-  } file is
+LOCATION: Wherever the root _app.${language === 'typescript' ? 'tsx' : 'jsx'
+    } file is
 ==============================
 Changes:
 - Initialize PostHog in _app.js.
@@ -190,6 +161,7 @@ export default function App({ Component, pageProps }) {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
       api_host: "/ingest",
       ui_host: "${getUiHostFromHost(host)}",
+      capture_pageview: 'history_change',
       capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
       loaded: (posthog) => {
         if (process.env.NODE_ENV === "development") posthog.debug()
