@@ -5,12 +5,12 @@ import * as os from 'os';
 import { DefaultMCPClientConfig, getDefaultServerConfig } from '../defaults';
 import { z } from 'zod';
 
-export const CursorMCPConfig = DefaultMCPClientConfig;
+export const ClaudeMCPConfig = DefaultMCPClientConfig;
 
-export type CursorMCPConfig = z.infer<typeof DefaultMCPClientConfig>;
+export type ClaudeMCPConfig = z.infer<typeof DefaultMCPClientConfig>;
 
-export class CursorMCPClient extends MCPClient {
-  name = 'Cursor';
+export class ClaudeMCPClient extends MCPClient {
+  name = 'Claude Desktop';
 
   constructor() {
     super();
@@ -21,7 +21,29 @@ export class CursorMCPClient extends MCPClient {
   }
 
   private getConfigPath(): string {
-    return path.join(os.homedir(), '.cursor', 'mcp.json');
+    const homeDir = os.homedir();
+    const isWindows = process.platform === 'win32';
+    const isMac = process.platform === 'darwin';
+
+    if (isMac) {
+      return path.join(
+        homeDir,
+        'Library',
+        'Application Support',
+        'Claude',
+        'claude_desktop_config.json',
+      );
+    }
+
+    if (isWindows) {
+      return path.join(
+        process.env.APPDATA || '',
+        'Claude',
+        'claude_desktop_config.json',
+      );
+    }
+
+    throw new Error(`Unsupported platform: ${process.platform}`);
   }
 
   async isServerInstalled(): Promise<boolean> {
@@ -33,7 +55,7 @@ export class CursorMCPClient extends MCPClient {
       }
 
       const configContent = await fs.promises.readFile(configPath, 'utf8');
-      const config = CursorMCPConfig.parse(JSON.parse(configContent));
+      const config = ClaudeMCPConfig.parse(JSON.parse(configContent));
 
       return 'posthog' in config.mcpServers;
     } catch {
@@ -47,12 +69,12 @@ export class CursorMCPClient extends MCPClient {
 
     await fs.promises.mkdir(configDir, { recursive: true });
 
-    let config: CursorMCPConfig = { mcpServers: {} };
+    let config: ClaudeMCPConfig = { mcpServers: {} };
 
     if (fs.existsSync(configPath)) {
       try {
         const existingContent = await fs.promises.readFile(configPath, 'utf8');
-        config = CursorMCPConfig.parse(JSON.parse(existingContent));
+        config = ClaudeMCPConfig.parse(JSON.parse(existingContent));
       } catch {
         config = { mcpServers: {} };
       }
@@ -76,7 +98,7 @@ export class CursorMCPClient extends MCPClient {
 
     try {
       const configContent = await fs.promises.readFile(configPath, 'utf8');
-      const config = CursorMCPConfig.parse(JSON.parse(configContent));
+      const config = ClaudeMCPConfig.parse(JSON.parse(configContent));
 
       if (config.mcpServers && 'posthog' in config.mcpServers) {
         delete config.mcpServers.posthog;

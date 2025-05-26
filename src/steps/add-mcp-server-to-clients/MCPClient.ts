@@ -3,4 +3,5 @@ export abstract class MCPClient {
   abstract isServerInstalled(): Promise<boolean>;
   abstract addServer(apiKey: string): Promise<void>;
   abstract removeServer(): Promise<void>;
+  abstract isClientSupported(): boolean;
 }

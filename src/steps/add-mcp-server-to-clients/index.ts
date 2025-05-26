@@ -6,6 +6,13 @@ import { abortIfCancelled } from '../../utils/clack-utils';
 import { arrayToSentence } from '../../utils/helper-functions';
 import { MCPClient } from './MCPClient';
 import { CursorMCPClient } from './clients/cursor';
+import { ClaudeMCPClient } from './clients/claude';
+
+export const getSupportedClients = (): MCPClient[] => {
+  return [new CursorMCPClient(), new ClaudeMCPClient()].filter((client) =>
+    client.isClientSupported(),
+  );
+};
 
 export const addMCPServerToClientsStep = async (
   apiKey: string,
@@ -15,7 +22,7 @@ export const addMCPServerToClientsStep = async (
     integration?: Integration;
   },
 ): Promise<string[]> => {
-  const clients: MCPClient[] = [new CursorMCPClient()];
+  const clients = getSupportedClients();
 
   const clientsToAdd: MCPClient[] = [];
 
@@ -28,7 +35,7 @@ export const addMCPServerToClientsStep = async (
 
   if (clientsToAdd.length === 0) {
     clack.log.info(
-      `PostHog MCP server is setup for ${arrayToSentence(
+      `Added PostHog MCP server to ${arrayToSentence(
         clients.map((c) => c.name),
       )}.`,
     );
@@ -74,7 +81,7 @@ export const removeMCPServerFromClientsStep = async ({
 }: {
   integration?: Integration;
 }): Promise<string[]> => {
-  const clients: MCPClient[] = [new CursorMCPClient()];
+  const clients = getSupportedClients();
 
   const clientsWithServer: MCPClient[] = [];
 
@@ -85,7 +92,6 @@ export const removeMCPServerFromClientsStep = async ({
   }
 
   if (clientsWithServer.length === 0) {
-    clack.log.info('No PostHog MCP servers found to remove.');
     analytics.capture('wizard interaction', {
       action: 'no mcp servers to remove',
       integration,
@@ -129,20 +135,9 @@ export const removeMCPServerFromClientsStep = async ({
     for (const client of clientsWithServer) {
       try {
         await client.removeServer();
-        removedClients.push(client.constructor.name);
-        clack.log.success(
-          `Removed PostHog MCP server from ${client.constructor.name.replace(
-            'MCPClient',
-            '',
-          )}`,
-        );
+        removedClients.push(client.name);
       } catch (error) {
-        clack.log.error(
-          `Failed to remove PostHog MCP server from ${client.constructor.name.replace(
-            'MCPClient',
-            '',
-          )}: ${error.message}`,
-        );
+        //
       }
     }
 
