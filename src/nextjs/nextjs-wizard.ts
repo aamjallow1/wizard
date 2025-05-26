@@ -20,7 +20,7 @@ import {
 } from './utils';
 import clack from '../utils/clack';
 import { Integration } from '../lib/constants';
-import { getNextjsAppRouterDocs, getNextjsPagesRouterDocs } from './docs';
+import { getNextjsAppRouterDocs, getNextjsPagesRouterDocs, getModernNextjsDocs } from './docs';
 import { analytics } from '../utils/analytics';
 import {
   generateFileChangesForIntegration,
@@ -37,6 +37,8 @@ import {
   runPrettierStep,
 } from '../steps';
 import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
+import * as semver from 'semver';
+
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
     wizardName: 'PostHog Next.js wizard',
@@ -107,6 +109,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     router,
     host,
     language: typeScriptDetected ? 'typescript' : 'javascript',
+    nextVersion,
   });
 
   clack.log.info(
@@ -188,15 +191,35 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   await analytics.shutdown('success');
 }
 
+function instrumentationFileAvailable(nextVersion: string | undefined): boolean {
+  const minimumVersion = '15.3.0'; //instrumentation-client.js|tsx was introduced in 15.3
+
+  if (!nextVersion) {
+    return false;
+  }
+  const coercedNextVersion = semver.coerce(nextVersion);
+  if (!coercedNextVersion) {
+    return false; // Unable to parse nextVersion
+  }
+  return semver.gte(coercedNextVersion, minimumVersion);
+}
+
 function getInstallationDocumentation({
   router,
   host,
   language,
+  nextVersion,
 }: {
   router: NextJsRouter;
   host: string;
   language: 'typescript' | 'javascript';
+  nextVersion: string | undefined;
 }) {
+
+  if (instrumentationFileAvailable(nextVersion)) {
+    return getModernNextjsDocs({ host, language });
+  }
+
   if (router === NextJsRouter.PAGES_ROUTER) {
     return getNextjsPagesRouterDocs({ host, language });
   }

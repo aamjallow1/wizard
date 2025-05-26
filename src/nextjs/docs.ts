@@ -147,7 +147,6 @@ LOCATION: Wherever the root _app.${language === 'typescript' ? 'tsx' : 'jsx'
 Changes:
 - Initialize PostHog in _app.js.
 - Wrap the application in PostHogProvider.
-- Manually capture $pageview events.
 
 Example:
 --------------------------------------------------
@@ -168,13 +167,6 @@ export default function App({ Component, pageProps }) {
       },
       debug: process.env.NODE_ENV === "development",
     })
-
-    const handleRouteChange = () => posthog?.capture("$pageview")
-    Router.events.on("routeChangeComplete", handleRouteChange)
-
-    return () => {
-      Router.events.off("routeChangeComplete", handleRouteChange)
-    }
   }, [])
 
   return (
@@ -199,6 +191,7 @@ import { PostHog } from "posthog-node"
 export default function PostHogClient() {
   const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    capture_pageview: 'history_change',
     flushAt: 1,
     flushInterval: 0,
   })
@@ -239,5 +232,38 @@ const nextConfig = {
   skipTrailingSlashRedirect: true,
 }
 module.exports = nextConfig
+--------------------------------------------------`;
+};
+
+export const getModernNextjsDocs = ({
+  host,
+  language,
+}: {
+  host: string;
+  language: 'typescript' | 'javascript';
+}) => {
+  return `
+==============================
+FILE: instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'
+    } 
+LOCATION: in the root of the application or inside an src folder.
+==============================
+Changes:
+- Update the instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'
+    } file to use the PostHog client. If the file does not exist yet, create it.
+
+Example:
+--------------------------------------------------
+
+import posthog from "posthog-js"
+
+posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+  api_host: "/ingest",
+  ui_host: "${getUiHostFromHost(host)}",
+  capture_pageview: 'history_change',
+  capture_pageleave: true, // Enable pageleave capture
+  capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
+  debug: process.env.NODE_ENV === "development",
+})
 --------------------------------------------------`;
 };
