@@ -35,9 +35,9 @@ import {
   addOrUpdateEnvironmentVariablesStep,
   createPRStep,
   runPrettierStep,
+  addMCPServerToClientsStep,
+  uploadEnvironmentVariablesStep,
 } from '../steps';
-import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
-import { addMCPServerToClientsStep } from '../steps/add-mcp-server-to-clients';
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
     wizardName: 'PostHog Next.js wizard',
