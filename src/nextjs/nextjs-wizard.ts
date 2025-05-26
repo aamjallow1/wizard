@@ -37,6 +37,7 @@ import {
   runPrettierStep,
 } from '../steps';
 import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
+import { addMCPServerToClientsStep } from '../steps/add-mcp-server-to-clients';
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
     wizardName: 'PostHog Next.js wizard',
@@ -164,6 +165,10 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     installDir: options.installDir,
     integration: Integration.nextjs,
     default: options.default,
+  });
+
+  await addMCPServerToClientsStep(projectApiKey, {
+    integration: Integration.nextjs,
   });
 
   const prUrl = await createPRStep({
