@@ -21,6 +21,39 @@ Currently the wizard can be used for **React, NextJS, Svelte and React Native**
 projects. If you have other integrations you would like the wizard to support,
 please open a [GitHub issue](https://github.com/posthog/wizard/issues)!
 
+## Testing Locally
+
+To test your local changes to the wizard in a different project:
+
+1.  **Build the wizard:**
+    Navigate to the root directory of this wizard project and build it:
+    ```bash
+    pnpm build
+    ```
+    This compiles the TypeScript code and prepares the `dist` directory. Run this command any time you make changes to the wizard's source code.
+
+2.  **Make the wizard available to other projects:**
+    In the wizard's project directory, run:
+    ```bash
+    pnpm link --global
+    ```
+    This command makes your local version of the wizard available system-wide. You generally only need to do this once, or if you've unlinked it or made changes to `package.json` that affect the package's global registration.
+
+4.  **Run the Wizard:**
+    Now, from the root directory of your test project, you can run the wizard using its command:
+    ```bash
+    wizard [options]
+    ```
+    For example:
+    ```bash
+    wizard --integration nextjs
+    ```
+    or simply:
+    ```bash
+    wizard
+    ```
+    The wizard will execute using your local code. Changes made in the wizard's source directory (and rebuilt with `pnpm build`) will be reflected immediately.
+
 # Options
 
 The following CLI arguments are available:
