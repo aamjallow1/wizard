@@ -116,7 +116,8 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     });
 
     clack.log.info(
-      `Reviewing PostHog documentation for instrumentation-client.${typeScriptDetected ? 'ts' : 'js'
+      `Reviewing PostHog documentation for instrumentation-client.${
+        typeScriptDetected ? 'ts' : 'js'
       }`,
     );
   } else {
