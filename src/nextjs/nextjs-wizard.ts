@@ -206,7 +206,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
 }
 
 function instrumentationFileAvailable(nextVersion: string | undefined): boolean {
-  const minimumVersion = '15.3.0'; //instrumentation-client.js|tsx was introduced in 15.3
+  const minimumVersion = '15.3.0'; //instrumentation-client.js|ts was introduced in 15.3
 
   if (!nextVersion) {
     return false;
