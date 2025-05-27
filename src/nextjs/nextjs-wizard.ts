@@ -98,23 +98,37 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  const router = await getNextJsRouter(options);
-
   const relevantFiles = await getRelevantFilesForIntegration({
     installDir: options.installDir,
     integration: Integration.nextjs,
   });
 
-  const installationDocumentation = getInstallationDocumentation({
-    router,
-    host,
-    language: typeScriptDetected ? 'typescript' : 'javascript',
-    nextVersion,
-  });
+  let installationDocumentation;
 
-  clack.log.info(
-    `Reviewing PostHog documentation for ${getNextJsRouterName(router)}`,
-  );
+  if (instrumentationFileAvailable(nextVersion)) {
+
+    installationDocumentation = getModernNextjsDocs({
+      host,
+      language: typeScriptDetected ? 'typescript' : 'javascript',
+    });
+
+    clack.log.info(
+      `Reviewing PostHog documentation for instrumentation-client.${typeScriptDetected ? 'ts' : 'js'}`,
+    );
+  } else {
+
+    let router = await getNextJsRouter(options);
+
+    installationDocumentation = getInstallationDocumentation({
+      router,
+      host,
+      language: typeScriptDetected ? 'typescript' : 'javascript',
+    });
+
+    clack.log.info(
+      `Reviewing PostHog documentation for ${getNextJsRouterName(router)}`,
+    );
+  }
 
   const filesToChange = await getFilesToChange({
     integration: Integration.nextjs,
@@ -208,17 +222,11 @@ function getInstallationDocumentation({
   router,
   host,
   language,
-  nextVersion,
 }: {
   router: NextJsRouter;
   host: string;
   language: 'typescript' | 'javascript';
-  nextVersion: string | undefined;
 }) {
-
-  if (instrumentationFileAvailable(nextVersion)) {
-    return getModernNextjsDocs({ host, language });
-  }
 
   if (router === NextJsRouter.PAGES_ROUTER) {
     return getNextjsPagesRouterDocs({ host, language });

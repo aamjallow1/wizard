@@ -244,13 +244,15 @@ export const getModernNextjsDocs = ({
 }) => {
   return `
 ==============================
-FILE: instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'
+FILE: instrumentation-client.${language === 'typescript' ? 'ts' : 'js'
     } 
 LOCATION: in the root of the application or inside an src folder.
 ==============================
 Changes:
-- Update the instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'
+- Create or update the instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'
     } file to use the PostHog client. If the file does not exist yet, create it.
+- Do *not* import instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'} in any other file; Next.js will automatically handle it.
+- Do not modify any other pages/components in the Next.js application; the PostHog client will be automatically initialized and handle all pageview tasks on its own.
 
 Example:
 --------------------------------------------------
@@ -264,6 +266,41 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
   capture_pageleave: true, // Enable pageleave capture
   capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
   debug: process.env.NODE_ENV === "development",
-})
+});
+--------------------------------------------------
+
+==============================
+FILE: next.config.{js,ts,mjs,cjs}
+LOCATION: Wherever the root next config is
+==============================
+Changes:
+- Add rewrites to the Next.js config to support PostHog, if there are existing rewrites, add the PostHog rewrites to them.
+- Add skipTrailingSlashRedirect to the Next.js config to support PostHog trailing slash API requests.
+- This can be of type js, ts, mjs, cjs etc. You should adapt the file according to what extension it uses, and if it does not exist yet use '.js'.
+
+Example:
+--------------------------------------------------
+const nextConfig = {
+  // other config
+  async rewrites() {
+    return [
+      {
+        source: "/ingest/static/:path*",
+        destination: "${getAssetHostFromHost(host)}/static/:path*",
+      },
+      {
+        source: "/ingest/:path*",
+        destination: "${host}/:path*",
+      },
+      {
+        source: "/ingest/decide",
+        destination: "${host}/decide",
+      },
+    ];
+  },
+  // This is required to support PostHog trailing slash API requests
+  skipTrailingSlashRedirect: true,
+}
+module.exports = nextConfig
 --------------------------------------------------`;
 };
