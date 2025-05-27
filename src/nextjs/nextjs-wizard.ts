@@ -20,7 +20,11 @@ import {
 } from './utils';
 import clack from '../utils/clack';
 import { Integration } from '../lib/constants';
-import { getNextjsAppRouterDocs, getNextjsPagesRouterDocs, getModernNextjsDocs } from './docs';
+import {
+  getNextjsAppRouterDocs,
+  getNextjsPagesRouterDocs,
+  getModernNextjsDocs,
+} from './docs';
 import { analytics } from '../utils/analytics';
 import {
   generateFileChangesForIntegration,
@@ -106,17 +110,17 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   let installationDocumentation;
 
   if (instrumentationFileAvailable(nextVersion)) {
-
     installationDocumentation = getModernNextjsDocs({
       host,
       language: typeScriptDetected ? 'typescript' : 'javascript',
     });
 
     clack.log.info(
-      `Reviewing PostHog documentation for instrumentation-client.${typeScriptDetected ? 'ts' : 'js'}`,
+      `Reviewing PostHog documentation for instrumentation-client.${
+        typeScriptDetected ? 'ts' : 'js'
+      }`,
     );
   } else {
-
     let router = await getNextJsRouter(options);
 
     installationDocumentation = getInstallationDocumentation({
@@ -205,7 +209,9 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   await analytics.shutdown('success');
 }
 
-function instrumentationFileAvailable(nextVersion: string | undefined): boolean {
+function instrumentationFileAvailable(
+  nextVersion: string | undefined,
+): boolean {
   const minimumVersion = '15.3.0'; //instrumentation-client.js|ts was introduced in 15.3
 
   if (!nextVersion) {
@@ -227,7 +233,6 @@ function getInstallationDocumentation({
   host: string;
   language: 'typescript' | 'javascript';
 }) {
-
   if (router === NextJsRouter.PAGES_ROUTER) {
     return getNextjsPagesRouterDocs({ host, language });
   }

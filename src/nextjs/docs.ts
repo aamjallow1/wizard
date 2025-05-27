@@ -9,8 +9,9 @@ export const getNextjsAppRouterDocs = ({
 }) => {
   return `
 ==============================
-FILE: PostHogProvider.${language === 'typescript' ? 'tsx' : 'jsx'
-    } (put it somewhere where client files are, like the components folder)
+FILE: PostHogProvider.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  } (put it somewhere where client files are, like the components folder)
 LOCATION: Wherever other providers are, or the components folder
 ==============================
 Changes:
@@ -141,8 +142,9 @@ export const getNextjsPagesRouterDocs = ({
   return `
 ==============================
 FILE: _app.${language === 'typescript' ? 'tsx' : 'jsx'}
-LOCATION: Wherever the root _app.${language === 'typescript' ? 'tsx' : 'jsx'
-    } file is
+LOCATION: Wherever the root _app.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  } file is
 ==============================
 Changes:
 - Initialize PostHog in _app.js.
@@ -244,14 +246,16 @@ export const getModernNextjsDocs = ({
 }) => {
   return `
 ==============================
-FILE: instrumentation-client.${language === 'typescript' ? 'ts' : 'js'
-    } 
+FILE: instrumentation-client.${language === 'typescript' ? 'ts' : 'js'} 
 LOCATION: in the root of the application or inside an src folder.
 ==============================
 Changes:
-- Create or update the instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'
-    } file to use the PostHog client. If the file does not exist yet, create it.
-- Do *not* import instrumentation-client.${language === 'typescript' ? 'tsx' : 'jsx'} in any other file; Next.js will automatically handle it.
+- Create or update the instrumentation-client.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  } file to use the PostHog client. If the file does not exist yet, create it.
+- Do *not* import instrumentation-client.${
+    language === 'typescript' ? 'tsx' : 'jsx'
+  } in any other file; Next.js will automatically handle it.
 - Do not modify any other pages/components in the Next.js application; the PostHog client will be automatically initialized and handle all pageview tasks on its own.
 
 Example:
