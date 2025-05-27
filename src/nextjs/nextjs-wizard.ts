@@ -116,12 +116,11 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     });
 
     clack.log.info(
-      `Reviewing PostHog documentation for instrumentation-client.${
-        typeScriptDetected ? 'ts' : 'js'
+      `Reviewing PostHog documentation for instrumentation-client.${typeScriptDetected ? 'ts' : 'js'
       }`,
     );
   } else {
-    let router = await getNextJsRouter(options);
+    const router = await getNextJsRouter(options);
 
     installationDocumentation = getInstallationDocumentation({
       router,
