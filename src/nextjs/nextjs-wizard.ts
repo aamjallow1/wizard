@@ -66,11 +66,10 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
 
   analytics.setTag('nextjs-version', getNextJsVersionBucket(nextVersion));
 
-  const { projectApiKey, wizardHash, host, personalApiKey } =
-    await getOrAskForProjectData({
-      ...options,
-      cloudRegion,
-    });
+  const { projectApiKey, wizardHash, host } = await getOrAskForProjectData({
+    ...options,
+    cloudRegion,
+  });
 
   const sdkAlreadyInstalled = hasPackageInstalled('posthog-js', packageJson);
 
@@ -168,11 +167,10 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     default: options.default,
   });
 
-  if (personalApiKey) {
-    await addMCPServerToClientsStep(personalApiKey, {
-      integration: Integration.nextjs,
-    });
-  }
+  await addMCPServerToClientsStep({
+    cloudRegion,
+    integration: Integration.nextjs,
+  });
 
   const prUrl = await createPRStep({
     installDir: options.installDir,

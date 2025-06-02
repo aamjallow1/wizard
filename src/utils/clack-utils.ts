@@ -33,7 +33,6 @@ interface ProjectData {
   host: string;
   wizardHash: string;
   distinctId: string;
-  personalApiKey?: string;
 }
 
 export interface CliSetupConfig {
@@ -508,16 +507,13 @@ export async function getOrAskForProjectData(
   wizardHash: string;
   host: string;
   projectApiKey: string;
-  personalApiKey?: string;
 }> {
   const cloudUrl = getCloudUrlFromRegion(_options.cloudRegion);
-  const { host, projectApiKey, personalApiKey, wizardHash } = await traceStep(
-    'login',
-    () =>
-      askForWizardLogin({
-        url: cloudUrl,
-        signup: _options.signup,
-      }),
+  const { host, projectApiKey, wizardHash } = await traceStep('login', () =>
+    askForWizardLogin({
+      url: cloudUrl,
+      signup: _options.signup,
+    }),
   );
 
   if (!projectApiKey) {
@@ -538,7 +534,6 @@ ${chalk.cyan(`${cloudUrl}/settings/project#variables`)}`);
     wizardHash,
     host: host || DEFAULT_HOST_URL,
     projectApiKey: projectApiKey || DUMMY_PROJECT_API_KEY,
-    personalApiKey: personalApiKey,
   };
 }
 
@@ -613,7 +608,6 @@ async function askForWizardLogin(options: {
             projectApiKey: result.data.project_api_key,
             host: result.data.host,
             distinctId: result.data.user_distinct_id,
-            personalApiKey: result.data.personal_api_key,
           };
 
           resolve(data);
