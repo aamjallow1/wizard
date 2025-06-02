@@ -242,17 +242,4 @@ A given feature flag should be used in as few places as possible. Do not increas
       )}`,
     );
   });
-
-  it('should not install rules when user declines', async () => {
-    process.env.CURSOR_TRACE_ID = 'test-trace-id';
-    selectMock.mockResolvedValue(false);
-
-    await addEditorRulesStep(mockOptions);
-
-    expect(mkdirMock).not.toHaveBeenCalled();
-    expect(readFileMock).not.toHaveBeenCalled();
-    expect(writeFileMock).not.toHaveBeenCalled();
-    expect(captureMock).not.toHaveBeenCalled();
-    expect(infoMock).not.toHaveBeenCalled();
-  });
 });

@@ -35,8 +35,9 @@ import {
   addOrUpdateEnvironmentVariablesStep,
   createPRStep,
   runPrettierStep,
+  addMCPServerToClientsStep,
+  uploadEnvironmentVariablesStep,
 } from '../steps';
-import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
   printWelcome({
     wizardName: 'PostHog Next.js wizard',
@@ -163,13 +164,17 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     rulesName: 'next-rules.md',
     installDir: options.installDir,
     integration: Integration.nextjs,
-    default: options.default,
   });
 
   const prUrl = await createPRStep({
     installDir: options.installDir,
     integration: Integration.nextjs,
     addedEditorRules,
+  });
+
+  await addMCPServerToClientsStep({
+    cloudRegion,
+    integration: Integration.nextjs,
   });
 
   const outroMessage = getOutroMessage({
