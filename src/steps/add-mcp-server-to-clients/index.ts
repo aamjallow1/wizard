@@ -68,21 +68,24 @@ export const addMCPServerToClientsStep = async ({
   ${installedClients.map((c) => `- ${c.name}`).join('\n  ')}`,
     );
 
-    const reinstall = await clack.select({
-      message: 'Would you like to reinstall it?',
-      options: [
-        {
-          value: true,
-          label: 'Yes',
-          hint: 'Reinstall the MCP server',
-        },
-        {
-          value: false,
-          label: 'No',
-          hint: 'Keep the existing installation',
-        },
-      ],
-    });
+    const reinstall = await abortIfCancelled(
+      clack.select({
+        message: 'Would you like to reinstall it?',
+        options: [
+          {
+            value: true,
+            label: 'Yes',
+            hint: 'Reinstall the MCP server',
+          },
+          {
+            value: false,
+            label: 'No',
+            hint: 'Keep the existing installation',
+          },
+        ],
+      }),
+      integration,
+    );
 
     if (!reinstall) {
       analytics.capture('wizard interaction', {
