@@ -18,10 +18,30 @@ export const getSupportedClients = (): MCPClient[] => {
 export const addMCPServerToClientsStep = async ({
   integration,
   cloudRegion,
+  askPermission = true,
 }: {
   integration?: Integration;
   cloudRegion?: CloudRegion;
+  askPermission?: boolean;
 }): Promise<string[]> => {
+  const hasPermission = askPermission
+    ? await abortIfCancelled(
+        clack.select({
+          message:
+            'Would you like to install the PostHog MCP server to use PostHog in your editor?',
+          options: [
+            { value: true, label: 'Yes' },
+            { value: false, label: 'No' },
+          ],
+        }),
+        integration,
+      )
+    : true;
+
+  if (!hasPermission) {
+    return [];
+  }
+
   const clients = getSupportedClients();
 
   const installedClients = await getInstalledClients();
@@ -55,10 +75,6 @@ export const addMCPServerToClientsStep = async ({
         clients: installedClients.map((c) => c.name),
         integration,
       });
-
-      await abort(
-        'The MCP server was not reinstalled. The existing installation will be kept.',
-      );
 
       return [];
     }

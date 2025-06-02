@@ -164,18 +164,17 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     rulesName: 'next-rules.md',
     installDir: options.installDir,
     integration: Integration.nextjs,
-    default: options.default,
-  });
-
-  await addMCPServerToClientsStep({
-    cloudRegion,
-    integration: Integration.nextjs,
   });
 
   const prUrl = await createPRStep({
     installDir: options.installDir,
     integration: Integration.nextjs,
     addedEditorRules,
+  });
+
+  await addMCPServerToClientsStep({
+    cloudRegion,
+    integration: Integration.nextjs,
   });
 
   const outroMessage = getOutroMessage({

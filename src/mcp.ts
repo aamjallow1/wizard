@@ -18,6 +18,7 @@ export const runMCPInstall = async (options: {
 
   await addMCPServerToClientsStep({
     cloudRegion: options.region,
+    askPermission: false,
   });
 
   clack.outro(`${chalk.green(
@@ -64,10 +65,8 @@ export const getPersonalApiKey = async (options: {
 
   await sleep(1500);
 
-  spinner.stop();
-
-  clack.log.info(
-    `If it didn't open automatically, open the following URL in your browser to get a Personal API key:\n\n${chalk.cyan(
+  spinner.stop(
+    `Opened your project settings. If the link didn't open automatically, open the following URL in your browser to get a Personal API key: \n\n${chalk.cyan(
       urlToOpen,
     )}`,
   );

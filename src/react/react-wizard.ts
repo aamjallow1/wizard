@@ -28,6 +28,7 @@ import { askForCloudRegion } from '../utils/clack-utils';
 import { getOutroMessage } from '../lib/messages';
 import {
   addEditorRulesStep,
+  addMCPServerToClientsStep,
   addOrUpdateEnvironmentVariablesStep,
   runPrettierStep,
 } from '../steps';
@@ -136,7 +137,6 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
     installDir: options.installDir,
     rulesName: 'react-rules.md',
     integration: Integration.react,
-    default: options.default,
   });
 
   const uploadedEnvVars = await uploadEnvironmentVariablesStep(
@@ -149,6 +149,11 @@ export async function runReactWizard(options: WizardOptions): Promise<void> {
       options,
     },
   );
+
+  await addMCPServerToClientsStep({
+    cloudRegion,
+    integration: Integration.react,
+  });
 
   const outroMessage = getOutroMessage({
     options,
