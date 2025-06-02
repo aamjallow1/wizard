@@ -1,3 +1,4 @@
+// We use the ClaudeMCPClient as a reference to test the DefaultMCPClient
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -68,47 +69,47 @@ describe('ClaudeMCPClient', () => {
   });
 
   describe('isClientSupported', () => {
-    it('should return true for macOS', () => {
+    it('should return true for macOS', async () => {
       Object.defineProperty(process, 'platform', {
         value: 'darwin',
         writable: true,
       });
-      expect(client.isClientSupported()).toBe(true);
+      await expect(client.isClientSupported()).resolves.toBe(true);
     });
 
-    it('should return true for Windows', () => {
+    it('should return true for Windows', async () => {
       Object.defineProperty(process, 'platform', {
         value: 'win32',
         writable: true,
       });
-      expect(client.isClientSupported()).toBe(true);
+      await expect(client.isClientSupported()).resolves.toBe(true);
     });
 
-    it('should return false for Linux', () => {
+    it('should return false for Linux', async () => {
       Object.defineProperty(process, 'platform', {
         value: 'linux',
         writable: true,
       });
-      expect(client.isClientSupported()).toBe(false);
+      await expect(client.isClientSupported()).resolves.toBe(false);
     });
 
-    it('should return false for other platforms', () => {
+    it('should return false for other platforms', async () => {
       Object.defineProperty(process, 'platform', {
         value: 'freebsd',
         writable: true,
       });
-      expect(client.isClientSupported()).toBe(false);
+      await expect(client.isClientSupported()).resolves.toBe(false);
     });
   });
 
   describe('getConfigPath', () => {
-    it('should return correct path for macOS', () => {
+    it('should return correct path for macOS', async () => {
       Object.defineProperty(process, 'platform', {
         value: 'darwin',
         writable: true,
       });
 
-      const configPath = (client as any).getConfigPath();
+      const configPath = await client.getConfigPath();
       expect(configPath).toBe(
         path.join(
           mockHomeDir,
@@ -120,7 +121,7 @@ describe('ClaudeMCPClient', () => {
       );
     });
 
-    it('should return correct path for Windows', () => {
+    it('should return correct path for Windows', async () => {
       Object.defineProperty(process, 'platform', {
         value: 'win32',
         writable: true,
@@ -129,19 +130,19 @@ describe('ClaudeMCPClient', () => {
       const mockAppData = 'C:\\Users\\Test\\AppData\\Roaming';
       process.env.APPDATA = mockAppData;
 
-      const configPath = (client as any).getConfigPath();
+      const configPath = await client.getConfigPath();
       expect(configPath).toBe(
         path.join(mockAppData, 'Claude', 'claude_desktop_config.json'),
       );
     });
 
-    it('should throw error for unsupported platform', () => {
+    it('should throw error for unsupported platform', async () => {
       Object.defineProperty(process, 'platform', {
         value: 'linux',
         writable: true,
       });
 
-      expect(() => (client as any).getConfigPath()).toThrow(
+      await expect(client.getConfigPath()).rejects.toThrow(
         'Unsupported platform: linux',
       );
     });
@@ -231,6 +232,7 @@ describe('ClaudeMCPClient', () => {
       expect(mkdirMock).toHaveBeenCalledWith(expectedConfigDir, {
         recursive: true,
       });
+
       expect(writeFileMock).toHaveBeenCalledWith(
         expectedConfigPath,
         JSON.stringify(
@@ -277,9 +279,20 @@ describe('ClaudeMCPClient', () => {
       );
     });
 
-    it('should create new config when existing config is invalid', async () => {
+    it('should not overwrite existing config when it is invalid', async () => {
       existsSyncMock.mockReturnValue(true);
-      readFileMock.mockResolvedValue('invalid json');
+      readFileMock.mockResolvedValue(
+        JSON.stringify({
+          invalidKey: {
+            existingServer: {
+              command: 'existing',
+              args: [],
+              env: {},
+            },
+          },
+          x: 'y',
+        }),
+      );
 
       await client.addServer(mockApiKey);
 
@@ -287,6 +300,14 @@ describe('ClaudeMCPClient', () => {
         expect.any(String),
         JSON.stringify(
           {
+            invalidKey: {
+              existingServer: {
+                command: 'existing',
+                args: [],
+                env: {},
+              },
+            },
+            x: 'y',
             mcpServers: {
               posthog: mockServerConfig,
             },
