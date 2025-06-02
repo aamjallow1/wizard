@@ -4,7 +4,7 @@ import {
   removeMCPServerFromClientsStep,
 } from './steps/add-mcp-server-to-clients';
 import clack from './utils/clack';
-import { abort } from './utils/clack-utils';
+import { abort, askForCloudRegion } from './utils/clack-utils';
 import type { CloudRegion } from './utils/types';
 import opn from 'opn';
 import { getCloudUrlFromRegion } from './utils/urls';
@@ -50,9 +50,11 @@ export const runMCPRemove = async () => {
 };
 
 export const getPersonalApiKey = async (options: {
-  cloudRegion: CloudRegion;
+  region?: CloudRegion;
 }): Promise<string> => {
-  const cloudUrl = getCloudUrlFromRegion(options.cloudRegion);
+  const cloudRegion = options.region ?? (await askForCloudRegion());
+
+  const cloudUrl = getCloudUrlFromRegion(cloudRegion);
 
   const urlToOpen = `${cloudUrl}/settings/user-api-keys?preset=mcp_server`;
 
