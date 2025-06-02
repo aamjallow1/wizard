@@ -2,7 +2,11 @@ import type { Integration } from '../../lib/constants';
 import { traceStep } from '../../telemetry';
 import { analytics } from '../../utils/analytics';
 import clack from '../../utils/clack';
-import { abort, abortIfCancelled } from '../../utils/clack-utils';
+import {
+  abort,
+  abortIfCancelled,
+  askForCloudRegion,
+} from '../../utils/clack-utils';
 import { MCPClient } from './MCPClient';
 import { CursorMCPClient } from './clients/cursor';
 import { ClaudeMCPClient } from './clients/claude';
@@ -24,6 +28,17 @@ export const addMCPServerToClientsStep = async ({
   cloudRegion?: CloudRegion;
   askPermission?: boolean;
 }): Promise<string[]> => {
+  const region = cloudRegion ?? (await askForCloudRegion());
+
+  if (region === 'eu') {
+    if (!askPermission) {
+      await abort(
+        'The MCP server is not available in the EU region. It is coming soon!',
+      );
+    }
+    return [];
+  }
+
   const hasPermission = askPermission
     ? await abortIfCancelled(
         clack.select({
@@ -83,7 +98,7 @@ export const addMCPServerToClientsStep = async ({
     clack.log.info('Removed existing installation.');
   }
 
-  const personalApiKey = await getPersonalApiKey({ region: cloudRegion });
+  const personalApiKey = await getPersonalApiKey({ cloudRegion: region });
 
   await traceStep('adding mcp servers', async () => {
     await addMCPServer(clients, personalApiKey);
