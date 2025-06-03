@@ -42,7 +42,7 @@ import {
   addMCPServerToClientsStep,
   uploadEnvironmentVariablesStep,
 } from '../steps';
-import { uploadEnvironmentVariablesStep } from '../steps/upload-environment-variables';
+
 import * as semver from 'semver';
 
 export async function runNextjsWizard(options: WizardOptions): Promise<void> {
