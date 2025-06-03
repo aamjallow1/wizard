@@ -500,7 +500,7 @@ export function isUsingTypeScript({
  * @returns project data (token, url)
  */
 export async function getOrAskForProjectData(
-  _options: WizardOptions & {
+  _options: Pick<WizardOptions, 'signup'> & {
     cloudRegion: CloudRegion;
   },
 ): Promise<{
@@ -595,6 +595,7 @@ async function askForWizardLogin(options: {
           project_api_key: string;
           host: string;
           user_distinct_id: string;
+          personal_api_key?: string;
         }>(`${options.url}/api/wizard/data`, {
           headers: {
             'Accept-Encoding': 'deflate',

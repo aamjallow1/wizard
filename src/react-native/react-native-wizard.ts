@@ -24,7 +24,11 @@ import {
 } from '../utils/file-utils';
 import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
-import { addEditorRulesStep, runPrettierStep } from '../steps';
+import {
+  addEditorRulesStep,
+  addMCPServerToClientsStep,
+  runPrettierStep,
+} from '../steps';
 import { EXPO } from '../utils/package-manager';
 import { getOutroMessage } from '../lib/messages';
 
@@ -150,7 +154,11 @@ export async function runReactNativeWizard(
     installDir: options.installDir,
     rulesName: 'react-native-rules.md',
     integration: Integration.reactNative,
-    default: options.default,
+  });
+
+  await addMCPServerToClientsStep({
+    cloudRegion,
+    integration: Integration.reactNative,
   });
 
   const packageManagerForOutro = await getPackageManager({

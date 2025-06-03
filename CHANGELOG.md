@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.2.2](https://github.com/PostHog/wizard/compare/v1.2.1...v1.2.2) (2025-06-02)
+
+
+### Bug Fixes
+
+* remove parsing from mcp configs ([#56](https://github.com/PostHog/wizard/issues/56)) ([e89d75a](https://github.com/PostHog/wizard/commit/e89d75a9ab4daf3729c8472214694646ee8aca16))
+
+## [1.2.1](https://github.com/PostHog/wizard/compare/v1.2.0...v1.2.1) (2025-06-02)
+
+
+### Bug Fixes
+
+* do not suggest mcp installation for EU cloud users ([#54](https://github.com/PostHog/wizard/issues/54)) ([e3010d8](https://github.com/PostHog/wizard/commit/e3010d82f486d2be06e07ca2a282aa7ebaffd640))
+
+## [1.2.0](https://github.com/PostHog/wizard/compare/v1.1.0...v1.2.0) (2025-06-02)
+
+
+### Features
+
+* setup mcp server automatically on install ([#48](https://github.com/PostHog/wizard/issues/48)) ([0b6b0b5](https://github.com/PostHog/wizard/commit/0b6b0b5414d0c66c248cea49f313589a94eefe09))
+
 ## [1.1.0](https://github.com/PostHog/wizard/compare/v1.0.0...v1.1.0) (2025-05-21)
 
 

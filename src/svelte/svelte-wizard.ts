@@ -26,7 +26,11 @@ import type { WizardOptions } from '../utils/types';
 import { askForCloudRegion } from '../utils/clack-utils';
 import { addEditorRulesStep } from '../steps/add-editor-rules';
 import { getOutroMessage } from '../lib/messages';
-import { addOrUpdateEnvironmentVariablesStep, runPrettierStep } from '../steps';
+import {
+  addMCPServerToClientsStep,
+  addOrUpdateEnvironmentVariablesStep,
+  runPrettierStep,
+} from '../steps';
 
 export async function runSvelteWizard(options: WizardOptions): Promise<void> {
   printWelcome({
@@ -139,7 +143,11 @@ export async function runSvelteWizard(options: WizardOptions): Promise<void> {
     installDir: options.installDir,
     rulesName: 'svelte-rules.md',
     integration: Integration.svelte,
-    default: options.default,
+  });
+
+  await addMCPServerToClientsStep({
+    cloudRegion,
+    integration: Integration.svelte,
   });
 
   const outroMessage = getOutroMessage({
