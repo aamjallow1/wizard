@@ -81,12 +81,12 @@ When we make improvements to this process, these are available instantly to all 
 
 ## Testing locally
 
-Run 
+Run:
 
 ```bash
-pnpm try --install-dir=
+pnpm try --install-dir=[a path]
 ```
-+ a path to a project to quickly test local changes.
+
 
 To build and use the tool locally:
 
