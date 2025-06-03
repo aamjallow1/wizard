@@ -81,36 +81,26 @@ When we make improvements to this process, these are available instantly to all 
 
 ## Testing locally
 
-To test your local changes to the wizard in a different project:
+Run `pnpm try --install-dir=` + a path to a project to quickly test local changes.
 
-1.  **Build the wizard:**
-    Navigate to the root directory of this wizard project and build it:
-    ```bash
-    pnpm build
-    ```
-    This compiles the TypeScript code and prepares the `dist` directory. Run this command any time you make changes to the wizard's source code.
+To build and use the tool locally:
 
-2.  **Make the wizard available to other projects:**
-    In the wizard's project directory, run:
-    ```bash
-    pnpm link --global
-    ```
-    This command makes your local version of the wizard available system-wide. You generally only need to do this once, or if you've unlinked it or made changes to `package.json` that affect the package's global registration.
+```
+pnpm build
+```
+This compiles the TypeScript code and prepares the `dist` directory. Run this command any time you make changes to the wizard's source code.
 
-4.  **Run the wizard:**
-    Now, from the root directory of your test project, you can run the wizard using its command:
-    ```bash
-    wizard [options]
-    ```
-    For example:
-    ```bash
-    wizard --integration nextjs
-    ```
-    or simply:
-    ```bash
-    wizard
-    ```
-    The wizard will execute using your local code. Changes made in the wizard's source directory (and rebuilt with `pnpm build`) will be reflected immediately.
+```bash
+pnpm link --global
+```
+This command makes your local version of the wizard available system-wide. You generally only need to do this once.
+
+Then: 
+
+```bash
+wizard [options]
+```
+The wizard will execute using your local code. Changes made in the wizard's source directory (and rebuilt with `pnpm build`) will be reflected immediately.
 
 ## Publishing your tool
 
