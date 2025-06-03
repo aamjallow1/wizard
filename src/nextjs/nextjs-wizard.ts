@@ -115,11 +115,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
       language: typeScriptDetected ? 'typescript' : 'javascript',
     });
 
-    clack.log.info(
-      `Reviewing PostHog documentation for instrumentation-client.${
-        typeScriptDetected ? 'ts' : 'js'
-      }`,
-    );
+    clack.log.info(`Reviewing PostHog documentation for Next.js`);
   } else {
     const router = await getNextJsRouter(options);
 
