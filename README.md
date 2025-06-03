@@ -81,7 +81,12 @@ When we make improvements to this process, these are available instantly to all 
 
 ## Testing locally
 
-Run `pnpm try --install-dir=` + a path to a project to quickly test local changes.
+Run 
+
+```bash
+pnpm try --install-dir=
+```
++ a path to a project to quickly test local changes.
 
 To build and use the tool locally:
 
@@ -100,7 +105,7 @@ Then:
 ```bash
 wizard [options]
 ```
-The wizard will execute using your local code. Changes made in the wizard's source directory (and rebuilt with `pnpm build`) will be reflected immediately.
+The wizard will execute your last build.
 
 ## Publishing your tool
 
