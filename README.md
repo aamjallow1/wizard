@@ -79,6 +79,34 @@ This also allows us to pick up the bill on behalf of our customers.
 
 When we make improvements to this process, these are available instantly to all users of the wizard, no training delays or other ambiguity.
 
+## Testing locally
+
+Run:
+
+```bash
+pnpm try --install-dir=[a path]
+```
+
+
+To build and use the tool locally:
+
+```
+pnpm build
+```
+This compiles the TypeScript code and prepares the `dist` directory. Run this command any time you make changes to the wizard's source code.
+
+```bash
+pnpm link --global
+```
+This command makes your local version of the wizard available system-wide. You generally only need to do this once.
+
+Then: 
+
+```bash
+wizard [options]
+```
+The wizard will execute your last build.
+
 ## Publishing your tool
 
 To make your version of a tool usable with a one-line `npx` command:
