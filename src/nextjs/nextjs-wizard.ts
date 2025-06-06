@@ -109,7 +109,7 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  let installationDocumentation;
+  let installationDocumentation; // Documentation for the installation of the PostHog SDK
 
   if (instrumentationFileAvailable(nextVersion)) {
     installationDocumentation = getModernNextjsDocs({
