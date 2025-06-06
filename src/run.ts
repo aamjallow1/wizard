@@ -33,21 +33,12 @@ export async function runWizard(argv: Args) {
     ...readEnvironment(),
   };
 
-  let resolvedInstallDir: string;
-  if (finalArgs.installDir) {
-    if (path.isAbsolute(finalArgs.installDir)) {
-      resolvedInstallDir = finalArgs.installDir;
-    } else {
-      resolvedInstallDir = path.join(process.cwd(), finalArgs.installDir);
-    }
-  } else {
-    resolvedInstallDir = process.cwd();
-  }
-
   const wizardOptions: WizardOptions = {
     debug: finalArgs.debug ?? false,
     forceInstall: finalArgs.forceInstall ?? false,
-    installDir: resolvedInstallDir,
+    installDir: finalArgs.installDir
+      ? path.join(process.cwd(), finalArgs.installDir)
+      : process.cwd(),
     cloudRegion: finalArgs.region ?? undefined,
     default: finalArgs.default ?? false,
     signup: finalArgs.signup ?? false,
