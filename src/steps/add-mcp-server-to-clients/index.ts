@@ -13,10 +13,17 @@ import { ClaudeMCPClient } from './clients/claude';
 import { getPersonalApiKey } from '../../mcp';
 import type { CloudRegion } from '../../utils/types';
 
-export const getSupportedClients = (): MCPClient[] => {
-  return [new CursorMCPClient(), new ClaudeMCPClient()].filter((client) =>
-    client.isClientSupported(),
-  );
+export const getSupportedClients = async (): Promise<MCPClient[]> => {
+  const allClients = [new CursorMCPClient(), new ClaudeMCPClient()];
+  const supportedClients: MCPClient[] = [];
+
+  for (const client of allClients) {
+    if (await client.isClientSupported()) {
+      supportedClients.push(client);
+    }
+  }
+
+  return supportedClients;
 };
 
 export const addMCPServerToClientsStep = async ({
@@ -57,7 +64,7 @@ export const addMCPServerToClientsStep = async ({
     return [];
   }
 
-  const clients = getSupportedClients();
+  const clients = await getSupportedClients();
 
   const installedClients = await getInstalledClients();
 
@@ -182,7 +189,7 @@ export const removeMCPServerFromClientsStep = async ({
 };
 
 export const getInstalledClients = async (): Promise<MCPClient[]> => {
-  const clients = getSupportedClients();
+  const clients = await getSupportedClients();
 
   const installedClients: MCPClient[] = [];
 
