@@ -111,7 +111,11 @@ describe('VercelEnvironmentProvider', () => {
       }),
     });
 
-    await provider.uploadEnvironmentVariable('TEST_KEY', 'valuewithnewlines\n', 'production');
+    await provider.uploadEnvironmentVariable(
+      'TEST_KEY',
+      'valuewithnewlines\n',
+      'production',
+    );
 
     // Verify newlines were removed and value was trimmed
     expect(stdinMock.write).toHaveBeenCalledWith('valuewithnewlines');
