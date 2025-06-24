@@ -7,6 +7,11 @@ import clack from '../../../utils/clack';
 import chalk from 'chalk';
 import { analytics } from '../../../utils/analytics';
 
+function sanitizeEnvValue(value: string): string {
+  // Remove all newlines and trim whitespace
+  return value.replace(/\n/g, '').trim();
+}
+
 export class VercelEnvironmentProvider extends EnvironmentProvider {
   name = 'Vercel';
   environments = ['production', 'preview', 'development'];
@@ -93,7 +98,7 @@ export class VercelEnvironmentProvider extends EnvironmentProvider {
         stderr += data.toString();
       });
 
-      proc.stdin.write(value);
+      proc.stdin.write(sanitizeEnvValue(value));
       proc.stdin.end();
 
       proc.on('close', (code) => {

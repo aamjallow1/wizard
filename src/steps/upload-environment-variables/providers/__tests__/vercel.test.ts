@@ -96,4 +96,24 @@ describe('VercelEnvironmentProvider', () => {
       expect.objectContaining({ stdio: ['pipe', 'pipe', 'pipe'] }),
     );
   });
+
+  it('should sanitize values by removing newlines', async () => {
+    const stdinMock = { write: jest.fn(), end: jest.fn() };
+
+    (child_process.spawn as jest.Mock).mockReturnValue({
+      stdin: stdinMock,
+      stderr: { on: jest.fn() },
+      on: jest.fn((event, cb) => {
+        if (event === 'close') {
+          // Call the callback immediately to prevent timeout
+          setTimeout(() => cb(0), 0);
+        }
+      }),
+    });
+
+    await provider.uploadEnvironmentVariable('TEST_KEY', 'valuewithnewlines\n', 'production');
+
+    // Verify newlines were removed and value was trimmed
+    expect(stdinMock.write).toHaveBeenCalledWith('valuewithnewlines');
+  });
 });
