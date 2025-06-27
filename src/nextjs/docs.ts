@@ -251,10 +251,10 @@ LOCATION: in the root of the application or inside an src folder.
 ==============================
 Changes:
 - Create or update the instrumentation-client.${
-    language === 'typescript' ? 'tsx' : 'jsx'
+    language === 'typescript' ? 'ts' : 'js'
   } file to use the PostHog client. If the file does not exist yet, create it.
 - Do *not* import instrumentation-client.${
-    language === 'typescript' ? 'tsx' : 'jsx'
+    language === 'typescript' ? 'ts' : 'js'
   } in any other file; Next.js will automatically handle it.
 - Do not modify any other pages/components in the Next.js application; the PostHog client will be automatically initialized and handle all pageview tasks on its own.
 
