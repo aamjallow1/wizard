@@ -31,8 +31,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
       api_host: "/ingest",
       ui_host: "${getUiHostFromHost(host)}",
-      capture_pageview: 'history_change',
-      capture_pageleave: true, // Enable pageleave capture
+      defaults: '2025-05-24',
       capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
       debug: process.env.NODE_ENV === "development",
     })
@@ -40,7 +39,6 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PHProvider client={posthog}>
-      <SuspendedPostHogPageView />
       {children}
     </PHProvider>
   )
@@ -85,10 +83,10 @@ Example:
 --------------------------------------------------
 import { PostHog } from "posthog-node"
 
+// NOTE: This is a Node.js client, so you can use it for sending events from the server side to PostHog.
 export default function PostHogClient() {
   const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    capture_pageview: 'history_change',
     flushAt: 1,
     flushInterval: 0,
   })
@@ -162,11 +160,8 @@ export default function App({ Component, pageProps }) {
     posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
       api_host: "/ingest",
       ui_host: "${getUiHostFromHost(host)}",
-      capture_pageview: 'history_change',
+      defaults: '2025-05-24',
       capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
-      loaded: (posthog) => {
-        if (process.env.NODE_ENV === "development") posthog.debug()
-      },
       debug: process.env.NODE_ENV === "development",
     })
   }, [])
@@ -190,10 +185,10 @@ Example:
 --------------------------------------------------
 import { PostHog } from "posthog-node"
 
+// NOTE: This is a Node.js client, so you can use it for sending events from the server side to PostHog.
 export default function PostHogClient() {
   const posthogClient = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    capture_pageview: 'history_change',
     flushAt: 1,
     flushInterval: 0,
   })
@@ -266,8 +261,7 @@ import posthog from "posthog-js"
 posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
   api_host: "/ingest",
   ui_host: "${getUiHostFromHost(host)}",
-  capture_pageview: 'history_change',
-  capture_pageleave: true, // Enable pageleave capture
+  defaults: '2025-05-24',
   capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
   debug: process.env.NODE_ENV === "development",
 });

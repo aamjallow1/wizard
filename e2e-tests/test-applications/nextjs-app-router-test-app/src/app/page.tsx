@@ -1,4 +1,5 @@
-import Image from "next/image";
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -13,9 +14,8 @@ export default function Home() {
         />
         <ol>
           <li>
-            Get started by editing <code>src/app/page.tsx</code>.
+            Go to the <Link href="/example">example page</Link>.
           </li>
-          <li>Save and see your changes instantly.</li>
         </ol>
 
         <div>
