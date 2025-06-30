@@ -151,7 +151,6 @@ Changes:
 Example:
 --------------------------------------------------
 import { useEffect } from "react"
-import { Router } from "next/router"
 import posthog from "posthog-js"
 import { PostHogProvider } from "posthog-js/react"
 
