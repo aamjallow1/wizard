@@ -24,6 +24,7 @@ LOCATION: Wherever the root of the app is
 ==============================
 Changes:
 - Add the PostHogProvider to the root of the app in the provider tree.
+- Make sure to include the defaults: '2025-05-24' option in the init call.
 
 Example:
 --------------------------------------------------

@@ -16,6 +16,7 @@ LOCATION: Wherever other providers are, or the components folder
 ==============================
 Changes:
 - Create a PostHogProvider component that will be imported into the layout file.
+- Make sure to include the defaults: '2025-05-24' option in the init call.
 
 Example:
 --------------------------------------------------
@@ -147,6 +148,7 @@ LOCATION: Wherever the root _app.${
 Changes:
 - Initialize PostHog in _app.js.
 - Wrap the application in PostHogProvider.
+- Make sure to include the defaults: '2025-05-24' option in the init call.
 
 Example:
 --------------------------------------------------
@@ -251,6 +253,7 @@ Changes:
     language === 'typescript' ? 'ts' : 'js'
   } in any other file; Next.js will automatically handle it.
 - Do not modify any other pages/components in the Next.js application; the PostHog client will be automatically initialized and handle all pageview tasks on its own.
+- Make sure to include the defaults: '2025-05-24' option in the init call.
 
 Example:
 --------------------------------------------------
