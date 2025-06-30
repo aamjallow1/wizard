@@ -41,6 +41,7 @@ root.render(
       apiKey={${apiKeyText}}
       options={{
         api_host: ${hostText},
+        defaults: '2025-05-24',
         capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
         debug: ${
           envVarPrefix === 'VITE_PUBLIC_'
