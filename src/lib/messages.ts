@@ -38,7 +38,6 @@ export const getOutroMessage = ({
   packageManager,
   envFileChanged,
   uploadedEnvVars,
-  prUrl,
 }: {
   options: WizardOptions;
   integration: Integration;
@@ -46,7 +45,6 @@ export const getOutroMessage = ({
   addedEditorRules: boolean;
   packageManager?: PackageManager;
   envFileChanged?: string;
-  prUrl?: string;
   uploadedEnvVars: string[];
 }) => {
   const continueUrl = options.signup
@@ -57,7 +55,6 @@ export const getOutroMessage = ({
 
   const changes = [
     addedEditorRules ? `Added Cursor rules for PostHog` : '',
-    prUrl ? `Created a PR for your changes: ${chalk.cyan(prUrl)}` : '',
     envFileChanged
       ? `Added your Project API key to your ${envFileChanged} file`
       : '',
@@ -70,7 +67,7 @@ export const getOutroMessage = ({
     uploadedEnvVars.length === 0
       ? `Upload your Project API key to your hosting provider`
       : '',
-    !prUrl ? `Create a PR for your changes` : '',
+    `Create a PR for your changes`,
   ].filter(Boolean);
 
   return `

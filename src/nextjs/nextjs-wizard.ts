@@ -37,7 +37,6 @@ import { getOutroMessage } from '../lib/messages';
 import {
   addEditorRulesStep,
   addOrUpdateEnvironmentVariablesStep,
-  createPRStep,
   runPrettierStep,
   addMCPServerToClientsStep,
   uploadEnvironmentVariablesStep,
@@ -184,12 +183,6 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     integration: Integration.nextjs,
   });
 
-  const prUrl = await createPRStep({
-    installDir: options.installDir,
-    integration: Integration.nextjs,
-    addedEditorRules,
-  });
-
   await addMCPServerToClientsStep({
     cloudRegion,
     integration: Integration.nextjs,
@@ -202,7 +195,6 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
     addedEditorRules,
     packageManager: packageManagerForOutro,
     envFileChanged: addedEnvVariables ? relativeEnvFilePath : undefined,
-    prUrl,
     uploadedEnvVars,
   });
 
