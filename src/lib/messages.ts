@@ -67,7 +67,6 @@ export const getOutroMessage = ({
     uploadedEnvVars.length === 0
       ? `Upload your Project API key to your hosting provider`
       : '',
-    `Create a PR for your changes`,
   ].filter(Boolean);
 
   return `
