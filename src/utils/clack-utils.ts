@@ -134,13 +134,11 @@ ${uncommittedOrUntrackedFiles.join('\n')}
 
 The wizard will create and update files.`,
       );
-      const continueWithDirtyRepo = options.default
-        ? true
-        : await abortIfCancelled(
-            clack.confirm({
-              message: 'Do you want to continue anyway?',
-            }),
-          );
+      const continueWithDirtyRepo = await abortIfCancelled(
+        clack.confirm({
+          message: 'Do you want to continue anyway?',
+        }),
+      );
 
       analytics.setTag('continue-with-dirty-repo', continueWithDirtyRepo);
 
