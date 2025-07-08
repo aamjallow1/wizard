@@ -17,6 +17,7 @@ import {
 } from './package-manager';
 import { fulfillsVersionRange } from './semver';
 import type { CloudRegion, Feature, WizardOptions } from './types';
+import { getPackageVersion } from './package-json';
 import {
   DEFAULT_HOST_URL,
   DUMMY_PROJECT_API_KEY,
@@ -253,6 +254,27 @@ export async function confirmContinueIfPackageVersionNotSupported({
   });
 }
 
+export async function isReact19Installed({
+  installDir,
+}: Pick<WizardOptions, 'installDir'>): Promise<boolean> {
+  try {
+    const packageJson = await getPackageDotJson({ installDir });
+    const reactVersion = getPackageVersion('react', packageJson);
+
+    if (!reactVersion) {
+      return false;
+    }
+
+    return fulfillsVersionRange({
+      version: reactVersion,
+      acceptableVersions: '>=19.0.0',
+      canBeLatest: true,
+    });
+  } catch (error) {
+    return false;
+  }
+}
+
 /**
  * Installs or updates a package with the user's package manager.
  *
@@ -303,6 +325,11 @@ export async function installPackage({
     const pkgManager =
       packageManager || (await getPackageManager({ installDir }));
 
+    // Most packages aren't compatible with React 19 yet, skip strict peer dependency checks if needed.
+    const isReact19 = await isReact19Installed({ installDir });
+    const legacyPeerDepsFlag =
+      isReact19 && pkgManager.name === 'npm' ? '--legacy-peer-deps' : '';
+
     sdkInstallSpinner.start(
       `${alreadyInstalled ? 'Updating' : 'Installing'} ${chalk.bold.cyan(
         packageNameDisplayLabel ?? packageName,
@@ -314,7 +341,7 @@ export async function installPackage({
         childProcess.exec(
           `${pkgManager.installCommand} ${packageName} ${pkgManager.flags} ${
             forceInstall ? pkgManager.forceInstallFlag : ''
-          }`,
+          } ${legacyPeerDepsFlag}`.trim(),
           { cwd: installDir },
           (err, stdout, stderr) => {
             if (err) {
