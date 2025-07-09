@@ -82,6 +82,12 @@ export async function runWizard(argv: Args) {
         clack.log.error('No setup wizard selected!');
     }
   } catch (error) {
+    analytics.captureException(error as Error, {
+      integration,
+      arguments: JSON.stringify(finalArgs),
+    });
+
+    await analytics.shutdown('error');
     clack.log.error(
       `Something went wrong. You can read the documentation for PostHog at ${chalk.cyan(
         `${INTEGRATION_CONFIG[integration].docsUrl}`,
