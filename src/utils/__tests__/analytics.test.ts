@@ -40,6 +40,7 @@ describe('Analytics', () => {
         'test-uuid',
         {
           properties: {
+            team: 'growth',
             ...properties,
           },
         },
@@ -58,6 +59,7 @@ describe('Analytics', () => {
         'test-uuid',
         {
           properties: {
+            team: 'growth',
             testTag: 'testValue',
             ...properties,
           },
@@ -76,7 +78,9 @@ describe('Analytics', () => {
         error,
         distinctId,
         {
-          properties: {},
+          properties: {
+            team: 'growth',
+          },
         },
       );
     });
@@ -90,7 +94,9 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {},
+          properties: {
+            team: 'growth',
+          },
         },
       );
     });
@@ -108,6 +114,7 @@ describe('Analytics', () => {
         'test-uuid',
         {
           properties: {
+            team: 'growth',
             environment: 'test',
             version: '1.0.0',
             integration: 'nextjs',
@@ -129,7 +136,24 @@ describe('Analytics', () => {
         'test-uuid',
         {
           properties: {
+            team: 'growth',
             integration: 'react',
+          },
+        },
+      );
+    });
+
+    it('should always include team:growth property in exceptions', () => {
+      const error = new Error('Test error');
+
+      analytics.captureException(error);
+
+      expect(mockPostHogInstance.captureException).toHaveBeenCalledWith(
+        error,
+        'test-uuid',
+        {
+          properties: {
+            team: 'growth',
           },
         },
       );
@@ -154,6 +178,7 @@ describe('Analytics', () => {
         'test-uuid',
         {
           properties: {
+            team: 'growth',
             integration: 'nextjs',
             forceInstall: true,
             debug: false,
@@ -177,6 +202,7 @@ describe('Analytics', () => {
         distinctId,
         {
           properties: {
+            team: 'growth',
             integration: 'svelte',
           },
         },
