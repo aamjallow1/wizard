@@ -954,15 +954,17 @@ export async function askForCloudRegion(): Promise<CloudRegion> {
   return await traceStep('ask-for-cloud-region', async () => {
     const cloudRegion: CloudRegion = await abortIfCancelled(
       clack.select({
-        message: 'Select your cloud region',
+        message: 'Select your PostHog Cloud region',
         options: [
           {
             label: 'US 🇺🇸',
             value: 'us',
+            hint: 'Your data will be stored in the US',
           },
           {
             label: 'EU 🇪🇺',
             value: 'eu',
+            hint: 'Your data will be stored in the EU',
           },
         ],
       }),

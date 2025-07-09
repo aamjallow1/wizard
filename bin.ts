@@ -33,12 +33,6 @@ yargs(hideBin(process.argv))
       describe: 'PostHog cloud region\nenv: POSTHOG_WIZARD_REGION',
       choices: ['us', 'eu'],
       type: 'string',
-      default: 'us',
-    },
-    eu: {
-      describe: 'Use EU region (shorthand for --region eu)',
-      type: 'boolean',
-      default: false,
     },
     default: {
       default: true,
@@ -78,9 +72,6 @@ yargs(hideBin(process.argv))
     },
     (argv) => {
       const options = { ...argv };
-      if (argv.eu) {
-        options.region = 'eu';
-      }
       void runWizard(options as unknown as WizardOptions);
     },
   )
@@ -94,9 +85,6 @@ yargs(hideBin(process.argv))
         },
         (argv) => {
           const options = { ...argv };
-          if (argv.eu) {
-            options.region = 'eu';
-          }
           void runMCPInstall(
             options as unknown as { signup: boolean; region?: CloudRegion },
           );

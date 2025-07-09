@@ -81,11 +81,11 @@ describe('CLI argument parsing', () => {
   });
 
   describe('--region flag', () => {
-    test('defaults to "us" when not specified', async () => {
+    test('is undefined when not specified', async () => {
       await runCLI([]);
 
       const args = getLastCallArgs(mockRunWizard);
-      expect(args.region).toBe('us');
+      expect(args.region).toBeUndefined();
     });
 
     test.each(['us', 'eu'])(
@@ -97,30 +97,6 @@ describe('CLI argument parsing', () => {
         expect(args.region).toBe(region);
       },
     );
-  });
-
-  describe('--eu flag (shorthand for --region eu)', () => {
-    test('sets region to "eu"', async () => {
-      await runCLI(['--eu']);
-
-      const args = getLastCallArgs(mockRunWizard);
-      expect(args.region).toBe('eu');
-      expect(args.eu).toBe(true);
-    });
-
-    test('overrides --region flag when both are specified', async () => {
-      await runCLI(['--region', 'us', '--eu']);
-
-      const args = getLastCallArgs(mockRunWizard);
-      expect(args.region).toBe('eu');
-    });
-
-    test('overrides --region flag regardless of order', async () => {
-      await runCLI(['--eu', '--region', 'us']);
-
-      const args = getLastCallArgs(mockRunWizard);
-      expect(args.region).toBe('eu');
-    });
   });
 
   describe('environment variables', () => {
@@ -152,6 +128,13 @@ describe('CLI argument parsing', () => {
       expect(args.region).toBe('eu');
       expect(args.default).toBe(true);
     });
+
+    test('region is undefined when no env var or CLI arg', async () => {
+      await runCLI([]);
+
+      const args = getLastCallArgs(mockRunWizard);
+      expect(args.region).toBeUndefined();
+    });
   });
 
   describe('backward compatibility', () => {
@@ -177,23 +160,16 @@ describe('CLI argument parsing', () => {
 
       // New defaults
       expect(args.default).toBe(true);
-      expect(args.region).toBe('us');
+      expect(args.region).toBeUndefined();
     });
   });
 
   describe('mcp commands', () => {
-    test('mcp add respects --eu flag', async () => {
-      await runCLI(['mcp', 'add', '--eu']);
-
-      const args = getLastCallArgs(mockRunMCPInstall);
-      expect(args.region).toBe('eu');
-    });
-
-    test('mcp add uses default region when not specified', async () => {
+    test('mcp add region is undefined when not specified', async () => {
       await runCLI(['mcp', 'add']);
 
       const args = getLastCallArgs(mockRunMCPInstall);
-      expect(args.region).toBe('us');
+      expect(args.region).toBeUndefined();
     });
 
     test('mcp add respects --region flag', async () => {
