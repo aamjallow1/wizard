@@ -16,6 +16,7 @@ export class Analytics {
       host: ANALYTICS_HOST_URL,
       flushAt: 1,
       flushInterval: 0,
+      enableExceptionAutocapture: true,
     });
 
     this.tags = {};
@@ -35,6 +36,15 @@ export class Analytics {
 
   setTag(key: string, value: string | boolean | number | null | undefined) {
     this.tags[key] = value;
+  }
+
+  captureException(error: Error, properties?: Record<string, unknown>) {
+    this.client.captureException(error, this.distinctId ?? this.anonymousId, {
+      properties: {
+        ...this.tags,
+        ...properties,
+      },
+    });
   }
 
   capture(eventName: string, properties?: Record<string, unknown>) {
