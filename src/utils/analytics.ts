@@ -38,13 +38,11 @@ export class Analytics {
     this.tags[key] = value;
   }
 
-  captureException(error: Error, properties?: Record<string, unknown>) {
+  captureException(error: Error, properties: Record<string, unknown> = {}) {
     this.client.captureException(error, this.distinctId ?? this.anonymousId, {
-      properties: {
-        team: 'growth',
-        ...this.tags,
-        ...properties,
-      },
+      team: 'growth',
+      ...this.tags,
+      ...properties,
     });
   }
 
