@@ -39,10 +39,8 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {
-            team: 'growth',
-            ...properties,
-          },
+          team: 'growth',
+          ...properties,
         },
       );
     });
@@ -58,11 +56,9 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {
-            team: 'growth',
-            testTag: 'testValue',
-            ...properties,
-          },
+          team: 'growth',
+          testTag: 'testValue',
+          ...properties,
         },
       );
     });
@@ -78,9 +74,7 @@ describe('Analytics', () => {
         error,
         distinctId,
         {
-          properties: {
-            team: 'growth',
-          },
+          team: 'growth',
         },
       );
     });
@@ -94,9 +88,7 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {
-            team: 'growth',
-          },
+          team: 'growth',
         },
       );
     });
@@ -113,13 +105,11 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {
-            team: 'growth',
-            environment: 'test',
-            version: '1.0.0',
-            integration: 'nextjs',
-            step: 'installation',
-          },
+          team: 'growth',
+          environment: 'test',
+          version: '1.0.0',
+          integration: 'nextjs',
+          step: 'installation',
         },
       );
     });
@@ -135,10 +125,8 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {
-            team: 'growth',
-            integration: 'react',
-          },
+          team: 'growth',
+          integration: 'react',
         },
       );
     });
@@ -152,9 +140,7 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {
-            team: 'growth',
-          },
+          team: 'growth',
         },
       );
     });
@@ -177,14 +163,12 @@ describe('Analytics', () => {
         error,
         'test-uuid',
         {
-          properties: {
-            team: 'growth',
-            integration: 'nextjs',
-            forceInstall: true,
-            debug: false,
-            arguments: JSON.stringify({ installDir: '/test' }),
-            step: 'wizard-execution',
-          },
+          team: 'growth',
+          integration: 'nextjs',
+          forceInstall: true,
+          debug: false,
+          arguments: JSON.stringify({ installDir: '/test' }),
+          step: 'wizard-execution',
         },
       );
     });
@@ -201,10 +185,8 @@ describe('Analytics', () => {
         error,
         distinctId,
         {
-          properties: {
-            team: 'growth',
-            integration: 'svelte',
-          },
+          team: 'growth',
+          integration: 'svelte',
         },
       );
     });
