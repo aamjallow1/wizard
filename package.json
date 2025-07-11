@@ -79,7 +79,7 @@
     "rimraf": "^3.0.2",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "tsx": "^3.14.0",
+    "tsx": "^4.20.3",
     "typescript": "^5.0.4"
   },
   "engines": {
@@ -101,7 +101,7 @@
     "fix:eslint": "eslint . --format stylish --fix",
     "test": "pnpm build && jest",
     "test:e2e": "pnpm build && ./e2e-tests/run.sh",
-    "try": "ts-node bin.ts",
+    "try": "tsx bin.ts",
     "test:watch": "jest --watch",
     "prepare": "husky"
   },
