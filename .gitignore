@@ -11,6 +11,7 @@ docs/_build
 docs/doctrees
 
 build
+!bin/build
 node_modules
 npm-debug.log
 ios
