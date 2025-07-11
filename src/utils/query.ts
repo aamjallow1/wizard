@@ -1,16 +1,18 @@
 import axios from 'axios';
 import type { ZodSchema } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import type { CloudRegion } from './types';
+import type { AIModel, CloudRegion } from './types';
 import { getCloudUrlFromRegion } from './urls';
 
 export const query = async <S>({
   message,
+  model = 'gemini-2.5-flash',
   region,
   schema,
   wizardHash,
 }: {
   message: string;
+  model?: AIModel;
   region: CloudRegion;
   schema: ZodSchema<S>;
   wizardHash: string;
@@ -21,6 +23,7 @@ export const query = async <S>({
     `${getCloudUrlFromRegion(region)}/api/wizard/query`,
     {
       message,
+      model,
       json_schema: { ...jsonSchema, name: 'schema', strict: true },
     },
     {
@@ -33,7 +36,9 @@ export const query = async <S>({
   const validation = schema.safeParse(response.data.data);
 
   if (!validation.success) {
-    throw new Error(`Invalid response from wizard: ${validation.error}`);
+    throw new Error(
+      `Invalid response from wizard: ${validation.error.message}`,
+    );
   }
 
   return validation.data;

@@ -89,7 +89,7 @@ export async function runWizard(argv: Args) {
 
     await analytics.shutdown('error');
     clack.log.error(
-      `Something went wrong. You can read the documentation for PostHog at ${chalk.cyan(
+      `Something went wrong. You can read the documentation at ${chalk.cyan(
         `${INTEGRATION_CONFIG[integration].docsUrl}`,
       )} to setup PostHog manually.`,
     );

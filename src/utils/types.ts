@@ -56,3 +56,5 @@ export type FileChange = {
 };
 
 export type CloudRegion = 'us' | 'eu';
+
+export type AIModel = 'o4-mini' | 'gemini-2.5-flash' | 'gemini-2.5-pro';
