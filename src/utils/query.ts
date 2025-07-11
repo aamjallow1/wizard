@@ -6,7 +6,7 @@ import { getCloudUrlFromRegion } from './urls';
 
 export const query = async <S>({
   message,
-  model = 'gemini-2.5-flash',
+  model = 'o4-mini',
   region,
   schema,
   wizardHash,
