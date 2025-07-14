@@ -165,7 +165,7 @@ export async function runEventSetupWizard(
       const enhancePrompt = `Enhance this ${isClientCode ? 'client-side' : 'server-side'} Next.js file with 1-2 meaningful PostHog events.
       
       Rules:
-      - Import ${isClientCode ? 'posthog-js' : 'posthog-node'} appropriately
+      - Import PostHog as the ${isClientCode ? 'posthog-js' : 'posthog-node'} package
       - Add 1-2 high-value events that track important user actions
       - Use descriptive event names (lowercase-hyphenated)
       - Include some properties with events where relevant, but do not create too much complexity to achieve this
@@ -175,6 +175,7 @@ export async function runEventSetupWizard(
       - Do not change the formatting of the file; only add events
       - Always return the entire file content, not just the changes. Never return a diff or truncated response that says "rest of file unchanged"
       - Do not add events to track pageviews; PostHog will do this automatically. Instead, track specific actions. Add no useEffect-type hooks.
+      - NEVER INSERT use-client. Respect the project's existing architecture
       
       File path: ${filePath}
       File content:
@@ -184,7 +185,7 @@ export async function runEventSetupWizard(
 
       const response = await query({
         message: enhancePrompt,
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-pro',
         region: cloudRegion,
         schema: EnhancedFileSchema,
         wizardHash,
