@@ -4,21 +4,21 @@ import {
   getOrAskForProjectData,
   askForCloudRegion,
   getPackageDotJson,
-} from './utils/clack-utils';
-import clack from './utils/clack';
-import { WizardOptions } from './utils/types';
+} from '../utils/clack-utils';
+import clack from '../utils/clack';
+import { WizardOptions } from '../utils/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import chalk from 'chalk';
-import { query } from './utils/query';
+import { query } from '../utils/query';
 import { z } from 'zod';
 import {
   getAllFilesInProject,
   updateFile,
-} from './utils/file-utils';
-import { getPackageVersion, hasPackageInstalled } from './utils/package-json';
+} from '../utils/file-utils';
+import { getPackageVersion, hasPackageInstalled } from '../utils/package-json';
 import * as semver from 'semver';
-import { enableDebugLogs, debug } from './utils/debug';
+import { enableDebugLogs, debug } from '../utils/debug';
 
 // Schema for file selection from AI
 const FileSelectionSchema = z.object({
@@ -125,6 +125,7 @@ export async function runEventSetupWizard(
   try {
     const response = await query({
       message: fileSelectionPrompt,
+      model: 'gemini-2.5-flash',
       region: cloudRegion,
       schema: FileSelectionSchema,
       wizardHash,
@@ -173,6 +174,7 @@ export async function runEventSetupWizard(
       - Do not initialize PostHog in the file; assume it has already been initialized
       - Do not change the formatting of the file; only add events
       - Always return the entire file content, not just the changes. Never return a diff or truncated response that says "rest of file unchanged"
+      - Do not add events to track pageviews; PostHog will do this automatically. Instead, track specific actions. Add no useEffect-type hooks.
       
       File path: ${filePath}
       File content:
@@ -182,6 +184,7 @@ export async function runEventSetupWizard(
 
       const response = await query({
         message: enhancePrompt,
+        model: 'gemini-2.5-flash',
         region: cloudRegion,
         schema: EnhancedFileSchema,
         wizardHash,
