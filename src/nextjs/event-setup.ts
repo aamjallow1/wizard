@@ -104,6 +104,66 @@ export async function runEventSetupWizard(
   debug('Files after filtering:', relativeFiles.length);
   s.stop('Project structure analyzed');
 
+  // Check if server-side PostHog helper exists
+  const posthogHelperJsPath = path.join(options.installDir, 'app', 'posthog.js');
+  const posthogHelperTsPath = path.join(options.installDir, 'app', 'posthog.ts');
+  const hasPosthogHelper = await fs.access(posthogHelperJsPath).then(() => true).catch(() => false) ||
+                          await fs.access(posthogHelperTsPath).then(() => true).catch(() => false);
+
+  if (!hasPosthogHelper) {
+    s.start('Creating server-side PostHog helper...');
+    
+    // Check if project uses TypeScript
+    const tsConfigPath = path.join(options.installDir, 'tsconfig.json');
+    const isTypeScript = await fs.access(tsConfigPath).then(() => true).catch(() => false);
+    
+    const helperContent = isTypeScript ? 
+      `// app/posthog.ts
+import { PostHog } from 'posthog-node'
+
+export default function PostHogClient(): PostHog {
+  const posthogClient = new PostHog(
+    process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+    {
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      flushAt: 1,
+      flushInterval: 0
+    }
+  )
+  return posthogClient
+}
+` : 
+      `// app/posthog.js
+import { PostHog } from 'posthog-node'
+
+export default function PostHogClient() {
+  const posthogClient = new PostHog(
+    process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    {
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      flushAt: 1,
+      flushInterval: 0
+    }
+  )
+  return posthogClient
+}
+`;
+
+    try {
+      // Ensure app directory exists
+      const appDir = path.join(options.installDir, 'app');
+      await fs.mkdir(appDir, { recursive: true });
+      
+      // Write the helper file
+      const targetPath = isTypeScript ? posthogHelperTsPath : posthogHelperJsPath;
+      await fs.writeFile(targetPath, helperContent);
+      s.stop(`Created server-side PostHog helper at app/posthog.${isTypeScript ? 'ts' : 'js'}`);
+    } catch (error) {
+      s.stop('Failed to create server-side PostHog helper');
+      debug('Error creating PostHog helper:', error);
+    }
+  }
+
   // Send file tree to AI to get 10 most useful files
   s.start('Selecting some files to enhance with events...');
 
@@ -159,23 +219,62 @@ export async function runEventSetupWizard(
       const fileContent = await fs.readFile(fullPath, 'utf8');
 
       // Determine if this is client or server code
-      const isClientCode = filePath.includes('app/') || filePath.includes('pages/') ||
-        filePath.includes('components/') || fileContent.includes('"use client"');
+      const isServerCode = 
+        // Explicit server indicators
+        fileContent.includes('"use server"') ||
+        // API routes
+        filePath.includes('/api/') ||
+        filePath.includes('route.ts') ||
+        filePath.includes('route.js') ||
+        // Server-only imports
+        fileContent.includes('import ') && (
+          fileContent.includes('next/headers') ||
+          fileContent.includes('next/cache') ||
+          fileContent.includes('@/lib/db') ||
+          fileContent.includes('prisma') ||
+          fileContent.includes('server-only')
+        ) ||
+        // Metadata exports (server components)
+        fileContent.includes('export const metadata') ||
+        fileContent.includes('export async function generateMetadata') ||
+        // Server actions
+        fileContent.includes('async function') && fileContent.includes('"use server"');
+      
+      const isClientCode = !isServerCode && (
+        // Explicit client directive
+        fileContent.includes('"use client"') ||
+        // Client-only hooks
+        fileContent.includes('useState') ||
+        fileContent.includes('useEffect') ||
+        fileContent.includes('useContext') ||
+        fileContent.includes('useReducer') ||
+        fileContent.includes('useCallback') ||
+        fileContent.includes('useMemo') ||
+        // Client-side event handlers
+        fileContent.includes('onClick') ||
+        fileContent.includes('onChange') ||
+        fileContent.includes('onSubmit') ||
+        // Components in typical client directories
+        (filePath.includes('components/') && !isServerCode)
+      );
 
       const enhancePrompt = `Enhance this ${isClientCode ? 'client-side' : 'server-side'} Next.js file with 1-2 meaningful PostHog events.
       
       Rules:
-      - Import PostHog as the ${isClientCode ? 'posthog-js' : 'posthog-node'} package
+      ${isClientCode ? 
+        '- Import from "posthog-js" and use the existing posthog instance' : 
+        '- Import the PostHog helper from "@/app/posthog" using: import PostHogClient from "@/app/posthog"\n      - Create a PostHog instance at the start of your server functions using: const posthog = PostHogClient()\n      - Remember to call posthog.shutdown() after capturing events to ensure they are sent'}
       - Add 1-2 high-value events that track important user actions
       - Use descriptive event names (lowercase-hyphenated)
       - Include some properties with events where relevant, but do not create too much complexity to achieve this
       - Ensure the code remains functional and follows Next.js patterns
       - Do not set timestamps on events; PostHog will do this automatically
-      - Do not initialize PostHog in the file; assume it has already been initialized
+      - ${isClientCode ? 'Do not initialize PostHog; assume it has already been initialized' : 'Use the PostHogClient helper to create instances as needed'}
       - Do not change the formatting of the file; only add events
       - Always return the entire file content, not just the changes. Never return a diff or truncated response that says "rest of file unchanged"
       - Do not add events to track pageviews; PostHog will do this automatically. Instead, track specific actions. Add no useEffect-type hooks.
-      - NEVER INSERT use-client. Respect the project's existing architecture
+      - NEVER INSERT "use client". Respect the project's existing architecture
+      ${!isClientCode ? '- For server-side code, capture events within async functions and remember to call shutdown() after' : ''}
       
       File path: ${filePath}
       File content:
