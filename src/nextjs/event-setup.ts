@@ -104,62 +104,27 @@ export async function runEventSetupWizard(
   debug('Files after filtering:', relativeFiles.length);
   s.stop('Project structure analyzed');
 
-  // Check if server-side PostHog helper exists
-  const posthogHelperJsPath = path.join(options.installDir, 'app', 'posthog.js');
-  const posthogHelperTsPath = path.join(options.installDir, 'app', 'posthog.ts');
-  const hasPosthogHelper = await fs.access(posthogHelperJsPath).then(() => true).catch(() => false) ||
-    await fs.access(posthogHelperTsPath).then(() => true).catch(() => false);
+  // Check if universal PostHog helper exists
+  const posthogHelperPath = path.join(options.installDir, 'app', 'posthog-helper.ts');
+  const hasPosthogHelper = await fs.access(posthogHelperPath).then(() => true).catch(() => false);
 
   if (!hasPosthogHelper) {
-    s.start('Creating server-side PostHog helper...');
-
-    // Check if project uses TypeScript
-    const tsConfigPath = path.join(options.installDir, 'tsconfig.json');
-    const isTypeScript = await fs.access(tsConfigPath).then(() => true).catch(() => false);
-
-    const helperContent = isTypeScript ?
-      `// app/posthog.ts
-import { PostHog } from 'posthog-node'
-
-export default function PostHogClient(): PostHog {
-  const posthogClient = new PostHog(
-    process.env.NEXT_PUBLIC_POSTHOG_KEY!,
-    {
-      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      flushAt: 1,
-      flushInterval: 0
-    }
-  )
-  return posthogClient
-}
-` :
-      `// app/posthog.js
-import { PostHog } from 'posthog-node'
-
-export default function PostHogClient() {
-  const posthogClient = new PostHog(
-    process.env.NEXT_PUBLIC_POSTHOG_KEY,
-    {
-      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      flushAt: 1,
-      flushInterval: 0
-    }
-  )
-  return posthogClient
-}
-`;
+    s.start('Creating universal PostHog helper...');
 
     try {
+      // Read the helper template from our source
+      const helperTemplatePath = path.join(__dirname, 'next-posthog-helper.ts');
+      const helperContent = await fs.readFile(helperTemplatePath, 'utf8');
+
       // Ensure app directory exists
       const appDir = path.join(options.installDir, 'app');
       await fs.mkdir(appDir, { recursive: true });
 
       // Write the helper file
-      const targetPath = isTypeScript ? posthogHelperTsPath : posthogHelperJsPath;
-      await fs.writeFile(targetPath, helperContent);
-      s.stop(`Created server-side PostHog helper at app/posthog.${isTypeScript ? 'ts' : 'js'}`);
+      await fs.writeFile(posthogHelperPath, helperContent);
+      s.stop('Created universal PostHog helper at app/posthog-helper.ts');
     } catch (error) {
-      s.stop('Failed to create server-side PostHog helper');
+      s.stop('Failed to create universal PostHog helper');
       debug('Error creating PostHog helper:', error);
     }
   }
@@ -218,45 +183,7 @@ export default function PostHogClient() {
       const fullPath = path.join(options.installDir, filePath);
       const fileContent = await fs.readFile(fullPath, 'utf8');
 
-      // Determine if this is client or server code
-      const isAPIRoute =
-        filePath.includes('/api/') ||
-        filePath.includes('route.ts') ||
-        filePath.includes('route.js');
-
-      const hasServerActions = fileContent.includes('"use server"');
-
-      const isServerOnlyFile =
-        isAPIRoute ||
-        // Server-only imports without any JSX
-        (!fileContent.includes('return (') && !fileContent.includes('return(') &&
-          fileContent.includes('import ') && (
-            fileContent.includes('next/headers') ||
-            fileContent.includes('next/cache') ||
-            fileContent.includes('@/lib/db') ||
-            fileContent.includes('prisma') ||
-            fileContent.includes('server-only')
-          )
-        );
-
-      const hasClientFeatures =
-        fileContent.includes('"use client"') ||
-        fileContent.includes('useState') ||
-        fileContent.includes('useEffect') ||
-        fileContent.includes('useContext') ||
-        fileContent.includes('useReducer') ||
-        fileContent.includes('useCallback') ||
-        fileContent.includes('useMemo') ||
-        fileContent.includes('onClick') ||
-        fileContent.includes('onChange') ||
-        fileContent.includes('onSubmit');
-
-      // Mixed files (RSC with server actions) should be treated as needing client-side tracking
-      // Pure API routes or server-only files get server-side tracking
-      const isClientCode = !isServerOnlyFile && (hasClientFeatures ||
-        (fileContent.includes('return (') || fileContent.includes('return(')));
-
-      const enhancePrompt = `You are enhancing a REAL production ${isClientCode ? 'client-side' : 'server-side'} Next.js file with PostHog analytics. This is NOT an example or tutorial - add events to the ACTUAL code provided.
+      const enhancePrompt = `You are enhancing a REAL production Next.js file with PostHog analytics. This is NOT an example or tutorial - add events to the ACTUAL code provided.
 
       CRITICAL INSTRUCTIONS:
       - This is a REAL file from a production codebase
@@ -272,17 +199,29 @@ export default function PostHogClient() {
       - NEVER track that someone simply arrived at or viewed a page
       - NEVER change the file's existing client/server architecture
       - NEVER add events on component mount or render - only on actual user interactions
+      - NEVER add onSubmit, onClick, onChange or any event handlers to Server Components
+      - If the file is a Server Component (no "use client" directive), track events in server actions only
+      
+      How to use PostHog:
+      - Import the universal helper functions:
+        import { captureEvent, postHogIdentify } from '@/app/posthog-helper'
+      
+      - To track events:
+        captureEvent('event-name', { property1: 'value', property2: 123 })
+      
+      - To identify users:
+        postHogIdentify(userId, { email: user.email, name: user.name })
+      
+      - These functions work in BOTH client and server code - no need to worry about which library to use
+      - The functions handle all the complexity of client vs server environments automatically
+      
+      IMPORTANT Server Component Rules:
+      - Server Components CANNOT have event handlers (onClick, onSubmit, onChange, etc.)
+      - In Server Components, track events inside server actions (async functions with "use server")
+      - For forms in Server Components, use action={serverAction} NOT onSubmit
+      - If you need client-side interaction tracking, the component must have "use client" directive
       
       Technical Rules:
-      ${isClientCode ?
-          `- This file ${hasServerActions ? 'contains server actions but is primarily a client component file' : 'is a client-side file'}
-      - For UI components and client-side code: Import from "posthog-js" and use the existing posthog instance
-      - ${hasServerActions ? 'For server actions marked with "use server": Import PostHogClient from "@/app/posthog" and use it within those functions only' : ''}
-      - Focus on tracking user interactions in the UI components` :
-          `- This is a server-only file (API route or server utility)
-      - Import the PostHog helper from "@/app/posthog" using: import PostHogClient from "@/app/posthog"
-      - Create a PostHog instance at the start of your server functions using: const posthog = PostHogClient()
-      - Remember to call posthog.shutdown() after capturing events to ensure they are sent`}
       - Add 1-2 high-value events that track the ACTUAL user actions in this file
       - Use descriptive event names (lowercase-hyphenated) based on what the code ACTUALLY does
       - Include properties that capture REAL data from the existing code
@@ -291,7 +230,6 @@ export default function PostHogClient() {
       - Always return the entire file content, not just the changes
       - NEVER add events that correspond to page views; PostHog tracks these automatically
       - NEVER INSERT "use client" or "use server" directives
-      ${!isClientCode ? '- For server-side code, capture events within async functions and remember to call shutdown() after' : ''}
       
       File path: ${filePath}
       File content:
@@ -299,14 +237,13 @@ export default function PostHogClient() {
       
       IMPORTANT: If this file only renders UI without any user interactions (no buttons, forms, or actions), 
       or if the only possible events would be pageview-like (e.g., "form-viewed", "page-opened", "flow-started"),
-      then SKIP THIS FILE by returning the original content unchanged. We only want to track actual user actions,
-      not that someone looked at a page.
+      then SKIP THIS FILE by returning the original content unchanged. We only want to track actual user actions, not that someone looked at a page.
       
       Return the enhanced file with PostHog tracking added to the EXISTING functionality. List the events you added.`;
 
       const response = await query({
         message: enhancePrompt,
-        model: 'gemini-2.5-pro',
+        model: 'gemini-2.5-flash',
         region: cloudRegion,
         schema: EnhancedFileSchema,
         wizardHash,

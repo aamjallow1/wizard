@@ -1,32 +1,38 @@
 /**
- * PostHog universal helper
+ * PostHog helper
  * 
  * This helper abstracts PostHog interactions for both client and server environments.
  * It automatically detects the runtime context and uses the appropriate PostHog library.
+ * This code was written and reviewed by real humans. The PostHog wizard copied it into your project, but did not generate it from scratch. It's a bit more complete than the basic install instructions, that's why it looks different.
  * 
  * Usage:
  * - Import and use the same functions in both client and server code
  * - No need to worry about which PostHog library to use
  * - Server-side events are automatically flushed using Next.js after()
+ * 
+ * This is a starting place! If you want this file to do more, go right ahead and enhance it for your needs.
  */
 
-// Import both PostHog libraries
-// @ts-ignore - These imports are resolved based on the build context
+// Import client-side PostHog (safe to import everywhere)
+// @ts-ignore
 import { posthog as posthogJS } from 'posthog-js'
-// @ts-ignore
-import { PostHog as PostHogNode } from 'posthog-node'
-// @ts-ignore
-import { after } from 'next/server'
 
 // Keep a singleton instance for server-side PostHog
 let serverPostHog: any = null
+let PostHogNode: any = null
 
 /**
  * Get or create the server-side PostHog instance
  * We keep a singleton to avoid creating multiple instances
  */
-function getServerPostHog() {
+async function getServerPostHog() {
   if (!serverPostHog && typeof window === 'undefined') {
+    // Dynamically import posthog-node only on the server
+    if (!PostHogNode) {
+      const posthogNodeModule = await import('posthog-node')
+      PostHogNode = posthogNodeModule.PostHog
+    }
+
     serverPostHog = new PostHogNode(
       process.env.NEXT_PUBLIC_POSTHOG_KEY || '',
       {
@@ -37,6 +43,15 @@ function getServerPostHog() {
     )
   }
   return serverPostHog
+}
+
+/**
+ * Schedule a flush after the response is sent (server-side only)
+ * Uses Next.js after() to defer flushing until after the response
+ */
+async function scheduleFlush(ph: any) {
+  const { after } = await import('next/server')
+  after(() => ph.flush())
 }
 
 /**
@@ -62,17 +77,20 @@ export function captureEvent(
       // Assumes PostHog is already initialized via instrumentation-client
       posthogJS.capture(eventName, properties)
     } else {
-      // Server-side: use posthog-node
-      const ph = getServerPostHog()
-      if (ph) {
-        after(() => ph.flush())
-        
-        ph.capture({
-          distinctId: properties?.$distinct_id || 'anonymous',
-          event: eventName,
-          properties: properties || {}
-        })
-      }
+      // Server-side: use posthog-node (async)
+      getServerPostHog().then(ph => {
+        if (ph) {
+          scheduleFlush(ph)
+
+          ph.capture({
+            distinctId: properties?.$distinct_id || 'anonymous',
+            event: eventName,
+            properties: properties || {}
+          })
+        }
+      }).catch(error => {
+        console.error('[PostHog helper] Error getting server PostHog:', error)
+      })
     }
   } catch (error) {
     // Fail silently to not break the application
@@ -103,16 +121,19 @@ export function postHogIdentify(
       // Client-side: use posthog-js
       posthogJS.identify(userId, properties)
     } else {
-      // Server-side: use posthog-node
-      const ph = getServerPostHog()
-      if (ph) {
-        after(() => ph.flush())
-        
-        ph.identify({
-          distinctId: userId,
-          properties: properties || {}
-        })
-      }
+      // Server-side: use posthog-node (async)
+      getServerPostHog().then(ph => {
+        if (ph) {
+          scheduleFlush(ph)
+
+          ph.identify({
+            distinctId: userId,
+            properties: properties || {}
+          })
+        }
+      }).catch(error => {
+        console.error('[PostHog helper] Error getting server PostHog:', error)
+      })
     }
   } catch (error) {
     // Fail silently to not break the application
