@@ -191,6 +191,7 @@ export async function runEventSetupWizard(
       - DO NOT modify the existing business logic or add simulation code
       - DO NOT add any tutorial-style comments
       - ONLY add PostHog event tracking to the existing, real functionality
+      - DO NOT remove comments that already exist in a file
       
       FORBIDDEN - NEVER DO THESE:
       - NEVER add 'use client' or 'use server' directives at the top of the file, or in functions
@@ -297,13 +298,13 @@ export async function runEventSetupWizard(
     md += `1. Review the changes made to your files\n`;
     md += `2. Test that events are being captured correctly\n`;
     md += `3. Create insights and dashboards in PostHog\n`;
-    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to an agent.`
+    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to your agent to flesh out.`
     md += `Learn more about what to measure with PostHog and why: https://posthog.com/docs/new-to-posthog/getting-hogpilled\n`;
     return md;
   };
 
   const markdownContent = generateMarkdown();
-  const fileName = 'event-tracking-plan.md';
+  const fileName = 'event-tracking-report.md';
   const filePath = path.join(options.installDir, fileName);
 
   await fs.writeFile(filePath, markdownContent);
@@ -314,13 +315,13 @@ export async function runEventSetupWizard(
   clack.outro(
     `Success! Added ${chalk.bold(totalEvents.toString())} events across ${chalk.bold(enhancedFiles.length.toString())} files.
     
-    Event tracking plan saved to: ${chalk.cyan(fileName)}
+    Event tracking report saved to: ${chalk.cyan(fileName)}
     
     Next steps:
-    1. Review changes with ${chalk.bold('git diff')}
-    2. Revert unwanted changes with ${chalk.bold('git checkout <file>')}
+    1. Review changes with your preferred git interface
+    2. Revert unwanted changes
     3. Test that events are being captured
-    4. Create insights in PostHog
+    4. Create insights in PostHog: https://posthog.com/docs/product-analytics/insights
     `,
   );
 }
