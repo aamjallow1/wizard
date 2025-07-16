@@ -230,6 +230,7 @@ export async function runEventSetupWizard(
       - Always return the entire file content, not just the changes
       - NEVER add events that correspond to page views; PostHog tracks these automatically
       - NEVER INSERT "use client" or "use server" directives
+      - PRESERVE the exact file ending (including any trailing newlines or lack thereof)
       
       File path: ${filePath}
       File content:
