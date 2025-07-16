@@ -12,10 +12,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { query } from '../utils/query';
 import { z } from 'zod';
-import {
-  getAllFilesInProject,
-  updateFile,
-} from '../utils/file-utils';
+import { getAllFilesInProject, updateFile } from '../utils/file-utils';
 import { getPackageVersion, hasPackageInstalled } from '../utils/package-json';
 import * as semver from 'semver';
 import { enableDebugLogs, debug } from '../utils/debug';
@@ -29,10 +26,12 @@ const FileSelectionSchema = z.object({
 const EnhancedFileSchema = z.object({
   filePath: z.string(),
   content: z.string(),
-  events: z.array(z.object({
-    name: z.string(),
-    description: z.string(),
-  })),
+  events: z.array(
+    z.object({
+      name: z.string(),
+      description: z.string(),
+    }),
+  ),
 });
 
 export async function runEventSetupWizard(
@@ -75,14 +74,17 @@ export async function runEventSetupWizard(
 
   // Check for instrumentation-client file
   const allFiles = await getAllFilesInProject(options.installDir);
-  const instrumentationFiles = allFiles.filter(f =>
-    f.includes('instrumentation') &&
-    (f.endsWith('.ts') || f.endsWith('.js')) &&
-    (f.includes('client') || f.includes('Client'))
+  const instrumentationFiles = allFiles.filter(
+    (f) =>
+      f.includes('instrumentation') &&
+      (f.endsWith('.ts') || f.endsWith('.js')) &&
+      (f.includes('client') || f.includes('Client')),
   );
 
   if (instrumentationFiles.length === 0) {
-    abort('No instrumentation-client file found. Please set up Next.js instrumentation first.');
+    abort(
+      'No instrumentation-client file found. Please set up Next.js instrumentation first.',
+    );
   }
 
   // Get the project file tree
@@ -91,10 +93,11 @@ export async function runEventSetupWizard(
 
   const projectFiles = await getAllFilesInProject(options.installDir);
   const relativeFiles = projectFiles
-    .map(f => path.relative(options.installDir, f))
-    .filter(f => {
+    .map((f) => path.relative(options.installDir, f))
+    .filter((f) => {
       // Exclude instrumentation files and next.config
-      const isInstrumentation = f.includes('instrumentation') &&
+      const isInstrumentation =
+        f.includes('instrumentation') &&
         (f.endsWith('.ts') || f.endsWith('.js'));
       const isNextConfig = f.startsWith('next.config.') || f === 'next.config';
       return !isInstrumentation && !isNextConfig;
@@ -105,8 +108,15 @@ export async function runEventSetupWizard(
   s.stop('Project structure analyzed');
 
   // Check if universal PostHog helper exists
-  const posthogHelperPath = path.join(options.installDir, 'app', 'posthog-helper.ts');
-  const hasPosthogHelper = await fs.access(posthogHelperPath).then(() => true).catch(() => false);
+  const posthogHelperPath = path.join(
+    options.installDir,
+    'app',
+    'posthog-helper.ts',
+  );
+  const hasPosthogHelper = await fs
+    .access(posthogHelperPath)
+    .then(() => true)
+    .catch(() => false);
 
   if (!hasPosthogHelper) {
     s.start('Creating universal PostHog helper...');
@@ -173,7 +183,9 @@ export async function runEventSetupWizard(
     events: Array<{ name: string; description: string }>;
   }> = [];
 
-  clack.log.info("\nEnhancing files with event tracking. Changes will be applied as they come in. Use your git interface to review new events. Feel free to toss anything you don't like...");
+  clack.log.info(
+    "\nEnhancing files with event tracking. Changes will be applied as they come in. Use your git interface to review new events. Feel free to toss anything you don't like...",
+  );
 
   for (const filePath of selectedFiles) {
     const fileSpinner = clack.spinner();
@@ -253,18 +265,23 @@ export async function runEventSetupWizard(
 
       // Apply changes immediately
       if (response.content !== fileContent) {
-        await updateFile({
-          filePath,
-          oldContent: fileContent,
-          newContent: response.content,
-        }, options);
+        await updateFile(
+          {
+            filePath,
+            oldContent: fileContent,
+            newContent: response.content,
+          },
+          options,
+        );
 
         enhancedFiles.push({
           filePath,
           events: response.events,
         });
 
-        fileSpinner.stop(`✓ Enhanced ${filePath} with ${response.events.length} events`);
+        fileSpinner.stop(
+          `✓ Enhanced ${filePath} with ${response.events.length} events`,
+        );
       } else {
         fileSpinner.stop(`No changes needed for ${filePath}`);
       }
@@ -283,7 +300,7 @@ export async function runEventSetupWizard(
     enhancedFiles.forEach((file) => {
       if (file.events.length > 0) {
         md += `### ${file.filePath}\n\n`;
-        file.events.forEach(event => {
+        file.events.forEach((event) => {
           md += `- **${event.name}**: ${event.description}\n`;
         });
         md += `\n`;
@@ -291,14 +308,14 @@ export async function runEventSetupWizard(
     });
 
     md += `\n## Events still awaiting implementation\n`;
-    md += `-`
+    md += `-`;
 
     md += `\n---\n\n`;
     md += `## Next Steps\n\n`;
     md += `1. Review the changes made to your files\n`;
     md += `2. Test that events are being captured correctly\n`;
     md += `3. Create insights and dashboards in PostHog\n`;
-    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to your agent to flesh out.\n`
+    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to your agent to flesh out.\n`;
     md += `Learn more about what to measure with PostHog and why: https://posthog.com/docs/new-to-posthog/getting-hogpilled\n`;
     return md;
   };
@@ -310,10 +327,15 @@ export async function runEventSetupWizard(
   await fs.writeFile(filePath, markdownContent);
 
   // Summary
-  const totalEvents = enhancedFiles.reduce((sum, file) => sum + file.events.length, 0);
+  const totalEvents = enhancedFiles.reduce(
+    (sum, file) => sum + file.events.length,
+    0,
+  );
 
   clack.outro(
-    `Success! Added ${chalk.bold(totalEvents.toString())} events across ${chalk.bold(enhancedFiles.length.toString())} files.
+    `Success! Added ${chalk.bold(
+      totalEvents.toString(),
+    )} events across ${chalk.bold(enhancedFiles.length.toString())} files.
     
     Event tracking report saved to: ${chalk.cyan(fileName)}
     
@@ -325,4 +347,3 @@ export async function runEventSetupWizard(
     `,
   );
 }
-
