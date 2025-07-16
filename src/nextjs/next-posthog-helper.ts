@@ -13,6 +13,10 @@
  * This is a starting place! If you want this file to do more, go right ahead and enhance it for your needs.
  */
 
+// This is a template file that will be copied to Next.js projects
+// Add declarations to satisfy TypeScript in the wizard project
+declare const window: any;
+
 // Import client-side PostHog (safe to import everywhere)
 // @ts-ignore
 import { posthog as posthogJS } from 'posthog-js'
@@ -50,6 +54,7 @@ async function getServerPostHog() {
  * Uses Next.js after() to defer flushing until after the response
  */
 async function scheduleFlush(ph: any) {
+  // @ts-ignore - This module will exist in the target Next.js project
   const { after } = await import('next/server')
   after(() => ph.flush())
 }
