@@ -77,7 +77,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
       if (!continueWithDirtyRepo) {
         analytics.capture('wizard interaction', {
           action: 'event setup canceled',
-          reason: 'uncommitted_changes',
+          reason: 'uncommitted changes',
         });
         await abort('Please commit your changes and try again.', 0);
       }
@@ -98,7 +98,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
   if (!isNextJs) {
     analytics.capture('wizard interaction', {
       action: 'event setup canceled',
-      reason: 'not_nextjs_project',
+      reason: 'not nextjs project',
     });
     abort('This feature is only available for Next.js projects.');
   }
@@ -109,8 +109,8 @@ The event setup wizard will modify multiple files. For the best experience, comm
   if (!isNext15_3Plus) {
     analytics.capture('wizard interaction', {
       action: 'event setup canceled',
-      reason: 'nextjs_version_too_old',
-      nextjs_version: nextVersion,
+      reason: 'nextjs version too old',
+      version: nextVersion,
     });
     abort('This feature requires Next.js 15.3.0 or higher.');
   }
@@ -127,7 +127,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
   if (instrumentationFiles.length === 0) {
     analytics.capture('wizard interaction', {
       action: 'event setup canceled',
-      reason: 'no_instrumentation_client',
+      reason: 'no instrumentation client',
     });
     abort(
       'No instrumentation-client file found. Please set up Next.js instrumentation first.',
@@ -218,7 +218,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
     s.stop('Failed to select files');
     analytics.capture('wizard interaction', {
       action: 'event setup canceled',
-      reason: 'file_selection_failed',
+      reason: 'file selection failed',
     });
     abort('Could not analyze project structure. Please try again.');
   }
@@ -386,9 +386,9 @@ The event setup wizard will modify multiple files. For the best experience, comm
   // Track successful completion
   analytics.capture('wizard interaction', {
     action: 'event setup successful',
-    total_events_added: totalEvents,
-    files_enhanced: enhancedFiles.length,
-    files_analyzed: selectedFiles.length,
+    'total events added': totalEvents,
+    enhanced: enhancedFiles.length,
+    analyzed: selectedFiles.length,
   });
 
   clack.outro(
