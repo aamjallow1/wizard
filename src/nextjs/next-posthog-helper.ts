@@ -83,7 +83,7 @@ export function captureEvent(
       void getServerPostHog()
         .then((ph) => {
           if (ph) {
-            scheduleFlush(ph);
+            void scheduleFlush(ph);
 
             ph.capture({
               distinctId: properties?.$distinct_id || 'anonymous',
@@ -131,10 +131,10 @@ export function postHogIdentify(
       posthogJS.identify(userId, properties);
     } else {
       // Server-side: use posthog-node (async)
-      getServerPostHog()
+      void getServerPostHog()
         .then((ph) => {
           if (ph) {
-            scheduleFlush(ph);
+            void scheduleFlush(ph);
 
             ph.identify({
               distinctId: userId,
