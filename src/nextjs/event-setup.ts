@@ -4,6 +4,8 @@ import {
   getOrAskForProjectData,
   askForCloudRegion,
   getPackageDotJson,
+  getUncommittedOrUntrackedFiles,
+  isInGitRepo,
 } from '../utils/clack-utils';
 import clack from '../utils/clack';
 import { WizardOptions } from '../utils/types';
@@ -55,6 +57,32 @@ export async function runEventSetupWizard(
   analytics.capture('wizard interaction', {
     action: 'event setup started',
   });
+
+  // Check for uncommitted changes
+  if (isInGitRepo()) {
+    const uncommittedOrUntrackedFiles = getUncommittedOrUntrackedFiles();
+    if (uncommittedOrUntrackedFiles.length) {
+      clack.log.warn(
+        `You have uncommitted or untracked files in your repo:
+
+${uncommittedOrUntrackedFiles.join('\n')}
+
+The event setup wizard will modify multiple files. For the best experience, commit or stash your changes first.`,
+      );
+      const continueWithDirtyRepo = await abortIfCancelled(
+        clack.confirm({
+          message: 'Do you want to continue anyway?',
+        }),
+      );
+      if (!continueWithDirtyRepo) {
+        analytics.capture('wizard interaction', {
+          action: 'event setup canceled',
+          reason: 'uncommitted_changes',
+        });
+        await abort('Please commit your changes and try again.', 0);
+      }
+    }
+  }
 
   const cloudRegion = options.cloudRegion ?? (await askForCloudRegion());
 
