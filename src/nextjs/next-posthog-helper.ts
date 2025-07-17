@@ -80,7 +80,7 @@ export function captureEvent(
       posthogJS.capture(eventName, properties);
     } else {
       // Server-side: use posthog-node (async)
-      getServerPostHog()
+      void getServerPostHog()
         .then((ph) => {
           if (ph) {
             scheduleFlush(ph);
@@ -93,6 +93,7 @@ export function captureEvent(
           }
         })
         .catch((error) => {
+          // eslint-disable-next-line no-console
           console.error(
             '[PostHog helper] Error getting server PostHog:',
             error,
@@ -101,6 +102,7 @@ export function captureEvent(
     }
   } catch (error) {
     // Fail silently to not break the application
+    // eslint-disable-next-line no-console
     console.error('[PostHog helper] Error capturing event:', error);
   }
 }
@@ -141,6 +143,7 @@ export function postHogIdentify(
           }
         })
         .catch((error) => {
+          // eslint-disable-next-line no-console
           console.error(
             '[PostHog helper] Error getting server PostHog:',
             error,
@@ -149,6 +152,7 @@ export function postHogIdentify(
     }
   } catch (error) {
     // Fail silently to not break the application
+    // eslint-disable-next-line no-console
     console.error('[PostHog helper] Error identifying user:', error);
   }
 }
