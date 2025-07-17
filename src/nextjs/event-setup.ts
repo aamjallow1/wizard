@@ -100,7 +100,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
       action: 'event setup canceled',
       reason: 'not nextjs project',
     });
-    abort('This feature is only available for Next.js projects.');
+    return abort('This feature is only available for Next.js projects.');
   }
 
   const nextVersion = getPackageVersion('next', packageJson);
@@ -112,7 +112,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
       reason: 'nextjs version too old',
       version: nextVersion,
     });
-    abort('This feature requires Next.js 15.3.0 or higher.');
+    return abort('This feature requires Next.js 15.3.0 or higher.');
   }
 
   // Check for instrumentation-client file
@@ -129,7 +129,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
       action: 'event setup canceled',
       reason: 'no instrumentation client',
     });
-    abort(
+    return abort(
       'No instrumentation-client file found. Please set up Next.js instrumentation first.',
     );
   }
@@ -220,7 +220,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
       action: 'event setup canceled',
       reason: 'file selection failed',
     });
-    abort('Could not analyze project structure. Please try again.');
+    return abort('Could not analyze project structure. Please try again.');
   }
 
   // Read the selected files and enhance them with events
