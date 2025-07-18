@@ -14,7 +14,6 @@
  */
 
 // This is a template file that will be copied to Next.js projects
-// Add declarations to satisfy TypeScript in the wizard project
 declare const window: any;
 
 // Import client-side PostHog (safe to import everywhere)
