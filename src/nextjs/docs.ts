@@ -119,8 +119,8 @@ const nextConfig = {
         destination: "${host}/:path*",
       },
       {
-        source: "/ingest/decide",
-        destination: "${host}/decide",
+        source: "/ingest/flags",
+        destination: "${host}/flags",
       },
     ];
   },
@@ -221,8 +221,8 @@ const nextConfig = {
         destination: "${host}/:path*",
       },
       {
-        source: "/ingest/decide",
-        destination: "${host}/decide",
+        source: "/ingest/flags",
+        destination: "${host}/flags",
       },
     ];
   },
@@ -293,8 +293,8 @@ const nextConfig = {
         destination: "${host}/:path*",
       },
       {
-        source: "/ingest/decide",
-        destination: "${host}/decide",
+        source: "/ingest/flags",
+        destination: "${host}/flags",
       },
     ];
   },
