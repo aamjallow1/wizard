@@ -19,12 +19,18 @@ if (!satisfies(process.version, NODE_VERSION_RANGE)) {
 import { runMCPInstall, runMCPRemove } from './src/mcp';
 import type { CloudRegion, WizardOptions } from './src/utils/types';
 import { runWizard } from './src/run';
-import { server } from './e2e-tests/mocks/server';
 
 if (process.env.NODE_ENV === 'test') {
-  server.listen({
-    onUnhandledRequest: 'bypass',
-  });
+  void (async () => {
+    try {
+      const { server } = await import('./e2e-tests/mocks/server.js');
+      server.listen({
+        onUnhandledRequest: 'bypass',
+      });
+    } catch (error) {
+      // Mock server import failed - this can happen during non-E2E tests
+    }
+  })();
 }
 
 yargs(hideBin(process.argv))
