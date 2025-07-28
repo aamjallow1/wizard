@@ -1,6 +1,5 @@
 import {
   abort,
-  abortIfCancelled,
   getOrAskForProjectData,
   askForCloudRegion,
   getPackageDotJson,
@@ -12,10 +11,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { query } from '../utils/query';
 import { z } from 'zod';
-import {
-  getAllFilesInProject,
-  updateFile,
-} from '../utils/file-utils';
+import { getAllFilesInProject, updateFile } from '../utils/file-utils';
 import { getPackageVersion, hasPackageInstalled } from '../utils/package-json';
 import * as semver from 'semver';
 import { enableDebugLogs, debug } from '../utils/debug';
@@ -29,10 +25,12 @@ const FileSelectionSchema = z.object({
 const EnhancedFileSchema = z.object({
   filePath: z.string(),
   content: z.string(),
-  events: z.array(z.object({
-    name: z.string(),
-    description: z.string(),
-  })),
+  events: z.array(
+    z.object({
+      name: z.string(),
+      description: z.string(),
+    }),
+  ),
 });
 
 export async function runEventSetupWizard(
@@ -63,26 +61,29 @@ export async function runEventSetupWizard(
   const isNextJs = hasPackageInstalled('next', packageJson);
 
   if (!isNextJs) {
-    abort('This feature is only available for Next.js projects.');
+    return abort('This feature is only available for Next.js projects.');
   }
 
   const nextVersion = getPackageVersion('next', packageJson);
   const isNext15_3Plus = nextVersion && semver.gte(nextVersion, '15.3.0');
 
   if (!isNext15_3Plus) {
-    abort('This feature requires Next.js 15.3.0 or higher.');
+    return abort('This feature requires Next.js 15.3.0 or higher.');
   }
 
   // Check for instrumentation-client file
   const allFiles = await getAllFilesInProject(options.installDir);
-  const instrumentationFiles = allFiles.filter(f =>
-    f.includes('instrumentation') &&
-    (f.endsWith('.ts') || f.endsWith('.js')) &&
-    (f.includes('client') || f.includes('Client'))
+  const instrumentationFiles = allFiles.filter(
+    (f) =>
+      f.includes('instrumentation') &&
+      (f.endsWith('.ts') || f.endsWith('.js')) &&
+      (f.includes('client') || f.includes('Client')),
   );
 
   if (instrumentationFiles.length === 0) {
-    abort('No instrumentation-client file found. Please set up Next.js instrumentation first.');
+    return abort(
+      'No instrumentation-client file found. Please set up Next.js instrumentation first.',
+    );
   }
 
   // Get the project file tree
@@ -91,10 +92,11 @@ export async function runEventSetupWizard(
 
   const projectFiles = await getAllFilesInProject(options.installDir);
   const relativeFiles = projectFiles
-    .map(f => path.relative(options.installDir, f))
-    .filter(f => {
+    .map((f) => path.relative(options.installDir, f))
+    .filter((f) => {
       // Exclude instrumentation files and next.config
-      const isInstrumentation = f.includes('instrumentation') &&
+      const isInstrumentation =
+        f.includes('instrumentation') &&
         (f.endsWith('.ts') || f.endsWith('.js'));
       const isNextConfig = f.startsWith('next.config.') || f === 'next.config';
       return !isInstrumentation && !isNextConfig;
@@ -105,20 +107,38 @@ export async function runEventSetupWizard(
   s.stop('Project structure analyzed');
 
   // Check if server-side PostHog helper exists
-  const posthogHelperJsPath = path.join(options.installDir, 'app', 'posthog.js');
-  const posthogHelperTsPath = path.join(options.installDir, 'app', 'posthog.ts');
-  const hasPosthogHelper = await fs.access(posthogHelperJsPath).then(() => true).catch(() => false) ||
-    await fs.access(posthogHelperTsPath).then(() => true).catch(() => false);
+  const posthogHelperJsPath = path.join(
+    options.installDir,
+    'app',
+    'posthog.js',
+  );
+  const posthogHelperTsPath = path.join(
+    options.installDir,
+    'app',
+    'posthog.ts',
+  );
+  const hasPosthogHelper =
+    (await fs
+      .access(posthogHelperJsPath)
+      .then(() => true)
+      .catch(() => false)) ||
+    (await fs
+      .access(posthogHelperTsPath)
+      .then(() => true)
+      .catch(() => false));
 
   if (!hasPosthogHelper) {
     s.start('Creating server-side PostHog helper...');
 
     // Check if project uses TypeScript
     const tsConfigPath = path.join(options.installDir, 'tsconfig.json');
-    const isTypeScript = await fs.access(tsConfigPath).then(() => true).catch(() => false);
+    const isTypeScript = await fs
+      .access(tsConfigPath)
+      .then(() => true)
+      .catch(() => false);
 
-    const helperContent = isTypeScript ?
-      `// app/posthog.ts
+    const helperContent = isTypeScript
+      ? `// app/posthog.ts
 import { PostHog } from 'posthog-node'
 
 export default function PostHogClient(): PostHog {
@@ -132,8 +152,8 @@ export default function PostHogClient(): PostHog {
   )
   return posthogClient
 }
-` :
-      `// app/posthog.js
+`
+      : `// app/posthog.js
 import { PostHog } from 'posthog-node'
 
 export default function PostHogClient() {
@@ -155,9 +175,15 @@ export default function PostHogClient() {
       await fs.mkdir(appDir, { recursive: true });
 
       // Write the helper file
-      const targetPath = isTypeScript ? posthogHelperTsPath : posthogHelperJsPath;
+      const targetPath = isTypeScript
+        ? posthogHelperTsPath
+        : posthogHelperJsPath;
       await fs.writeFile(targetPath, helperContent);
-      s.stop(`Created server-side PostHog helper at app/posthog.${isTypeScript ? 'ts' : 'js'}`);
+      s.stop(
+        `Created server-side PostHog helper at app/posthog.${
+          isTypeScript ? 'ts' : 'js'
+        }`,
+      );
     } catch (error) {
       s.stop('Failed to create server-side PostHog helper');
       debug('Error creating PostHog helper:', error);
@@ -194,7 +220,7 @@ export default function PostHogClient() {
     s.stop(`Selected ${selectedFiles.length} files for event tracking`);
   } catch (error) {
     s.stop('Failed to select files');
-    abort('Could not analyze project structure. Please try again.');
+    return abort('Could not analyze project structure. Please try again.');
   }
 
   // Read the selected files and enhance them with events
@@ -208,7 +234,9 @@ export default function PostHogClient() {
     events: Array<{ name: string; description: string }>;
   }> = [];
 
-  clack.log.info("\nEnhancing files with event tracking. Changes will be applied as they come in. Use your git interface to review new events. Feel free to toss anything you don't like...");
+  clack.log.info(
+    "\nEnhancing files with event tracking. Changes will be applied as they come in. Use your git interface to review new events. Feel free to toss anything you don't like...",
+  );
 
   for (const filePath of selectedFiles) {
     const fileSpinner = clack.spinner();
@@ -229,15 +257,14 @@ export default function PostHogClient() {
       const isServerOnlyFile =
         isAPIRoute ||
         // Server-only imports without any JSX
-        (!fileContent.includes('return (') && !fileContent.includes('return(') &&
-          fileContent.includes('import ') && (
-            fileContent.includes('next/headers') ||
+        (!fileContent.includes('return (') &&
+          !fileContent.includes('return(') &&
+          fileContent.includes('import ') &&
+          (fileContent.includes('next/headers') ||
             fileContent.includes('next/cache') ||
             fileContent.includes('@/lib/db') ||
             fileContent.includes('prisma') ||
-            fileContent.includes('server-only')
-          )
-        );
+            fileContent.includes('server-only')));
 
       const hasClientFeatures =
         fileContent.includes('"use client"') ||
@@ -253,10 +280,15 @@ export default function PostHogClient() {
 
       // Mixed files (RSC with server actions) should be treated as needing client-side tracking
       // Pure API routes or server-only files get server-side tracking
-      const isClientCode = !isServerOnlyFile && (hasClientFeatures ||
-        (fileContent.includes('return (') || fileContent.includes('return(')));
+      const isClientCode =
+        !isServerOnlyFile &&
+        (hasClientFeatures ||
+          fileContent.includes('return (') ||
+          fileContent.includes('return('));
 
-      const enhancePrompt = `You are enhancing a REAL production ${isClientCode ? 'client-side' : 'server-side'} Next.js file with PostHog analytics. This is NOT an example or tutorial - add events to the ACTUAL code provided.
+      const enhancePrompt = `You are enhancing a REAL production ${
+        isClientCode ? 'client-side' : 'server-side'
+      } Next.js file with PostHog analytics. This is NOT an example or tutorial - add events to the ACTUAL code provided.
 
       CRITICAL INSTRUCTIONS:
       - This is a REAL file from a production codebase
@@ -274,15 +306,25 @@ export default function PostHogClient() {
       - NEVER add events on component mount or render - only on actual user interactions
       
       Technical Rules:
-      ${isClientCode ?
-          `- This file ${hasServerActions ? 'contains server actions but is primarily a client component file' : 'is a client-side file'}
+      ${
+        isClientCode
+          ? `- This file ${
+              hasServerActions
+                ? 'contains server actions but is primarily a client component file'
+                : 'is a client-side file'
+            }
       - For UI components and client-side code: Import from "posthog-js" and use the existing posthog instance
-      - ${hasServerActions ? 'For server actions marked with "use server": Import PostHogClient from "@/app/posthog" and use it within those functions only' : ''}
-      - Focus on tracking user interactions in the UI components` :
-          `- This is a server-only file (API route or server utility)
+      - ${
+        hasServerActions
+          ? 'For server actions marked with "use server": Import PostHogClient from "@/app/posthog" and use it within those functions only'
+          : ''
+      }
+      - Focus on tracking user interactions in the UI components`
+          : `- This is a server-only file (API route or server utility)
       - Import the PostHog helper from "@/app/posthog" using: import PostHogClient from "@/app/posthog"
       - Create a PostHog instance at the start of your server functions using: const posthog = PostHogClient()
-      - Remember to call posthog.shutdown() after capturing events to ensure they are sent`}
+      - Remember to call posthog.shutdown() after capturing events to ensure they are sent`
+      }
       - Add 1-2 high-value events that track the ACTUAL user actions in this file
       - Use descriptive event names (lowercase-hyphenated) based on what the code ACTUALLY does
       - Include properties that capture REAL data from the existing code
@@ -291,7 +333,11 @@ export default function PostHogClient() {
       - Always return the entire file content, not just the changes
       - NEVER add events that correspond to page views; PostHog tracks these automatically
       - NEVER INSERT "use client" or "use server" directives
-      ${!isClientCode ? '- For server-side code, capture events within async functions and remember to call shutdown() after' : ''}
+      ${
+        !isClientCode
+          ? '- For server-side code, capture events within async functions and remember to call shutdown() after'
+          : ''
+      }
       
       File path: ${filePath}
       File content:
@@ -314,18 +360,23 @@ export default function PostHogClient() {
 
       // Apply changes immediately
       if (response.content !== fileContent) {
-        await updateFile({
-          filePath,
-          oldContent: fileContent,
-          newContent: response.content,
-        }, options);
+        await updateFile(
+          {
+            filePath,
+            oldContent: fileContent,
+            newContent: response.content,
+          },
+          options,
+        );
 
         enhancedFiles.push({
           filePath,
           events: response.events,
         });
 
-        fileSpinner.stop(`✓ Enhanced ${filePath} with ${response.events.length} events`);
+        fileSpinner.stop(
+          `✓ Enhanced ${filePath} with ${response.events.length} events`,
+        );
       } else {
         fileSpinner.stop(`No changes needed for ${filePath}`);
       }
@@ -344,7 +395,7 @@ export default function PostHogClient() {
     enhancedFiles.forEach((file) => {
       if (file.events.length > 0) {
         md += `### ${file.filePath}\n\n`;
-        file.events.forEach(event => {
+        file.events.forEach((event) => {
           md += `- **${event.name}**: ${event.description}\n`;
         });
         md += `\n`;
@@ -352,14 +403,14 @@ export default function PostHogClient() {
     });
 
     md += `\n## Events still awaiting implementation\n`;
-    md += `-`
+    md += `-`;
 
     md += `\n---\n\n`;
     md += `## Next Steps\n\n`;
     md += `1. Review the changes made to your files\n`;
     md += `2. Test that events are being captured correctly\n`;
     md += `3. Create insights and dashboards in PostHog\n`;
-    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to an agent.`
+    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to an agent.`;
     md += `Learn more about what to measure with PostHog and why: https://posthog.com/docs/new-to-posthog/getting-hogpilled\n`;
     return md;
   };
@@ -371,10 +422,15 @@ export default function PostHogClient() {
   await fs.writeFile(filePath, markdownContent);
 
   // Summary
-  const totalEvents = enhancedFiles.reduce((sum, file) => sum + file.events.length, 0);
+  const totalEvents = enhancedFiles.reduce(
+    (sum, file) => sum + file.events.length,
+    0,
+  );
 
   clack.outro(
-    `Success! Added ${chalk.bold(totalEvents.toString())} events across ${chalk.bold(enhancedFiles.length.toString())} files.
+    `Success! Added ${chalk.bold(
+      totalEvents.toString(),
+    )} events across ${chalk.bold(enhancedFiles.length.toString())} files.
     
     Event tracking plan saved to: ${chalk.cyan(fileName)}
     
