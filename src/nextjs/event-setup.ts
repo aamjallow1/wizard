@@ -43,7 +43,7 @@ export async function runEventSetupWizard(
   clack.intro(
     `Let's do a first pass on PostHog event tracking for your project.
     
-    We'll start by analyzing your project structure, then choose ten files to enhance. Use git to discard any events you're not happy with.
+    We'll start by analyzing your project structure, then choose up to ten files to enhance. Use git to discard any events you're not happy with.
 
     This will give you a starting point, then you can add any events that we missed.
     `,
@@ -180,8 +180,7 @@ export default function PostHogClient() {
         : posthogHelperJsPath;
       await fs.writeFile(targetPath, helperContent);
       s.stop(
-        `Created server-side PostHog helper at app/posthog.${
-          isTypeScript ? 'ts' : 'js'
+        `Created server-side PostHog helper at app/posthog.${isTypeScript ? 'ts' : 'js'
         }`,
       );
     } catch (error) {
@@ -286,9 +285,8 @@ export default function PostHogClient() {
           fileContent.includes('return (') ||
           fileContent.includes('return('));
 
-      const enhancePrompt = `You are enhancing a REAL production ${
-        isClientCode ? 'client-side' : 'server-side'
-      } Next.js file with PostHog analytics. This is NOT an example or tutorial - add events to the ACTUAL code provided.
+      const enhancePrompt = `You are enhancing a REAL production ${isClientCode ? 'client-side' : 'server-side'
+        } Next.js file with PostHog analytics. This is NOT an example or tutorial - add events to the ACTUAL code provided.
 
       CRITICAL INSTRUCTIONS:
       - This is a REAL file from a production codebase
@@ -306,25 +304,22 @@ export default function PostHogClient() {
       - NEVER add events on component mount or render - only on actual user interactions
       
       Technical Rules:
-      ${
-        isClientCode
-          ? `- This file ${
-              hasServerActions
-                ? 'contains server actions but is primarily a client component file'
-                : 'is a client-side file'
-            }
+      ${isClientCode
+          ? `- This file ${hasServerActions
+            ? 'contains server actions but is primarily a client component file'
+            : 'is a client-side file'
+          }
       - For UI components and client-side code: Import from "posthog-js" and use the existing posthog instance
-      - ${
-        hasServerActions
-          ? 'For server actions marked with "use server": Import PostHogClient from "@/app/posthog" and use it within those functions only'
-          : ''
-      }
+      - ${hasServerActions
+            ? 'For server actions marked with "use server": Import PostHogClient from "@/app/posthog" and use it within those functions only'
+            : ''
+          }
       - Focus on tracking user interactions in the UI components`
           : `- This is a server-only file (API route or server utility)
       - Import the PostHog helper from "@/app/posthog" using: import PostHogClient from "@/app/posthog"
       - Create a PostHog instance at the start of your server functions using: const posthog = PostHogClient()
       - Remember to call posthog.shutdown() after capturing events to ensure they are sent`
-      }
+        }
       - Add 1-2 high-value events that track the ACTUAL user actions in this file
       - Use descriptive event names (lowercase-hyphenated) based on what the code ACTUALLY does
       - Include properties that capture REAL data from the existing code
@@ -333,11 +328,10 @@ export default function PostHogClient() {
       - Always return the entire file content, not just the changes
       - NEVER add events that correspond to page views; PostHog tracks these automatically
       - NEVER INSERT "use client" or "use server" directives
-      ${
-        !isClientCode
+      ${!isClientCode
           ? '- For server-side code, capture events within async functions and remember to call shutdown() after'
           : ''
-      }
+        }
       
       File path: ${filePath}
       File content:
@@ -386,9 +380,9 @@ export default function PostHogClient() {
     }
   }
 
-  // Generate event tracking plan
+  // Generate event tracking report
   const generateMarkdown = () => {
-    let md = `# Event tracking plan\n\n`;
+    let md = `# Event tracking report\n\n`;
     md += `This document lists all PostHog events that have been automatically added to your Next.js application.\n\n`;
     md += `## Events by File\n\n`;
 
@@ -403,7 +397,7 @@ export default function PostHogClient() {
     });
 
     md += `\n## Events still awaiting implementation\n`;
-    md += `-`;
+    md += `- (you can fill these in)`;
 
     md += `\n---\n\n`;
     md += `## Next Steps\n\n`;
@@ -416,7 +410,7 @@ export default function PostHogClient() {
   };
 
   const markdownContent = generateMarkdown();
-  const fileName = 'event-tracking-plan.md';
+  const fileName = 'event-tracking-report.md';
   const filePath = path.join(options.installDir, fileName);
 
   await fs.writeFile(filePath, markdownContent);
