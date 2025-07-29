@@ -200,7 +200,9 @@ export async function runNextjsWizard(options: WizardOptions): Promise<void> {
 
   clack.outro(outroMessage);
 
-  clack.outro("Want to try our experimental event instrumentation? Run the wizard again with this argument: npx @posthog/wizard@latest event-setup");
+  clack.outro(
+    'Want to try our experimental event instrumentation? Run the wizard again with this argument: npx @posthog/wizard@latest event-setup',
+  );
 
   await analytics.shutdown('success');
 }
