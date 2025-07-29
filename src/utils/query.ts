@@ -7,19 +7,21 @@ import { analytics } from './analytics';
 import { AxiosError } from 'axios';
 import { debug } from './debug';
 
+export interface QueryOptions<S> {
+  message: string;
+  model?: AIModel;
+  region: CloudRegion;
+  schema: ZodSchema<S>;
+  wizardHash: string;
+}
+
 export const query = async <S>({
   message,
   model = 'o4-mini',
   region,
   schema,
   wizardHash,
-}: {
-  message: string;
-  model?: AIModel;
-  region: CloudRegion;
-  schema: ZodSchema<S>;
-  wizardHash: string;
-}): Promise<S> => {
+}: QueryOptions<S>): Promise<S> => {
   const fullSchema = zodToJsonSchema(schema, 'schema');
   const jsonSchema = fullSchema.definitions;
 
@@ -42,6 +44,9 @@ export const query = async <S>({
       {
         headers: {
           'X-PostHog-Wizard-Hash': wizardHash,
+          ...(process.env.RECORD_FIXTURES === 'true'
+            ? { 'X-PostHog-Wizard-Fixture-Generation': true }
+            : {}),
         },
       },
     )
@@ -73,6 +78,20 @@ export const query = async <S>({
     throw new Error(
       `Invalid response from wizard: ${validation.error.message}`,
     );
+  }
+
+  if (process.env.NODE_ENV === 'test') {
+    const { fixtureTracker } = await import(
+      '../../e2e-tests/mocks/fixture-tracker.js'
+    );
+
+    const requestBody = JSON.stringify({
+      message,
+      model,
+      json_schema: { ...jsonSchema, name: 'schema', strict: true },
+    });
+
+    fixtureTracker.saveQueryFixture(requestBody, validation.data);
   }
 
   return validation.data;

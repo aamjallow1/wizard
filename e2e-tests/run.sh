@@ -1,15 +1,20 @@
-# Check if volta is installed in the environment
-VOLTA=$(which volta)
+#!/usr/bin/env bash
 
-# Set cwd to the directory of this script
-cd "$(dirname "$0")"
+VOLTA=$(which volta)
+cd "$(dirname "$0")" || exit
+
+# Only cleanup fixtures if running all tests.
+if [ "$#" -gt 0 ]; then
+  export CLEANUP_UNUSED_FIXTURES=false
+else
+  export CLEANUP_UNUSED_FIXTURES=true
+fi
 
 # Run the tests with volta if it is installed
 if [ -x "$VOLTA" ]; then
   echo "Running tests with volta"
-  volta run pnpm test $@
-# Otherwise, run the tests without volta
+  volta run pnpm test "$@"
 else
   echo "Running tests without volta"
-  pnpm test $@
+  pnpm test "$@"
 fi
