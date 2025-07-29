@@ -320,7 +320,7 @@ The event setup wizard will modify multiple files. For the best experience, comm
     md += `1. Review the changes made to your files\n`;
     md += `2. Test that events are being captured correctly\n`;
     md += `3. Create insights and dashboards in PostHog\n`;
-    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to an agent.`;
+    md += `4. Make a list of events we missed above. Knock them out yourself, or give this file to an agent.\n\n`;
     md += `Learn more about what to measure with PostHog and why: https://posthog.com/docs/new-to-posthog/getting-hogpilled\n`;
     return md;
   };
