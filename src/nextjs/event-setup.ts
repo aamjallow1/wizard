@@ -18,6 +18,11 @@ import { getAllFilesInProject, updateFile } from '../utils/file-utils';
 import { getPackageVersion, hasPackageInstalled } from '../utils/package-json';
 import * as semver from 'semver';
 import { enableDebugLogs, debug } from '../utils/debug';
+import { analytics } from '../utils/analytics';
+
+// Analytics constants
+const WIZARD_INTERACTION = 'wizard interaction';
+const INTEGRATION_NAME = 'event-setup';
 
 // Schema for file selection from AI
 const FileSelectionSchema = z.object({
@@ -69,8 +74,16 @@ The event setup wizard will modify multiple files. For the best experience, comm
         }),
       );
       if (!continueWithDirtyRepo) {
+        analytics.capture(WIZARD_INTERACTION, {
+          action: 'aborted due to uncommitted changes',
+          integration: INTEGRATION_NAME,
+        });
         return abort('Please commit your changes and try again.', 0);
       }
+      analytics.capture(WIZARD_INTERACTION, {
+        action: 'continued with uncommitted changes',
+        integration: INTEGRATION_NAME,
+      });
     }
   }
 
@@ -92,7 +105,14 @@ The event setup wizard will modify multiple files. For the best experience, comm
   const nextVersion = getPackageVersion('next', packageJson);
   const isNext15_3Plus = nextVersion && semver.gte(nextVersion, '15.3.0');
 
+  analytics.setTag('nextjs-version', nextVersion);
+
   if (!isNext15_3Plus) {
+    analytics.capture(WIZARD_INTERACTION, {
+      action: 'aborted due to nextjs version',
+      integration: INTEGRATION_NAME,
+      nextjsVersion: nextVersion,
+    });
     return abort('This feature requires Next.js 15.3.0 or higher.');
   }
 
@@ -106,10 +126,20 @@ The event setup wizard will modify multiple files. For the best experience, comm
   );
 
   if (instrumentationFiles.length === 0) {
+    analytics.capture(WIZARD_INTERACTION, {
+      action: 'aborted due to missing instrumentation-client',
+      integration: INTEGRATION_NAME,
+    });
     return abort(
       'No instrumentation-client file found. Please set up Next.js instrumentation-client first. Try using this wizard to do it!',
     );
   }
+
+  analytics.capture(WIZARD_INTERACTION, {
+    action: 'started event setup',
+    integration: INTEGRATION_NAME,
+    instrumentationFilesCount: instrumentationFiles.length,
+  });
 
   // Get the project file tree
   const s = clack.spinner();
@@ -130,6 +160,13 @@ The event setup wizard will modify multiple files. For the best experience, comm
   debug('Total files found:', projectFiles.length);
   debug('Files after filtering:', relativeFiles.length);
   s.stop('Project structure analyzed');
+
+  analytics.capture(WIZARD_INTERACTION, {
+    action: 'analyzed project structure',
+    integration: INTEGRATION_NAME,
+    totalFiles: projectFiles.length,
+    eligibleFiles: relativeFiles.length,
+  });
 
   // Send file tree to AI to get 10 most useful files
   s.start('Selecting some files to enhance with events...');
@@ -173,8 +210,18 @@ The event setup wizard will modify multiple files. For the best experience, comm
     });
     selectedFiles = response.files;
     s.stop(`Selected ${selectedFiles.length} files for event tracking`);
+    analytics.capture(WIZARD_INTERACTION, {
+      action: 'selected files for tracking',
+      integration: INTEGRATION_NAME,
+      filesSelected: selectedFiles.length,
+    });
   } catch (error) {
     s.stop('Failed to select files');
+    analytics.capture(WIZARD_INTERACTION, {
+      action: 'file selection failed',
+      integration: INTEGRATION_NAME,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     return abort('Could not analyze project structure. Please try again.');
   }
 
@@ -287,12 +334,30 @@ The event setup wizard will modify multiple files. For the best experience, comm
         fileSpinner.stop(
           `✓ Enhanced ${filePath} with ${response.events.length} events`,
         );
+        analytics.capture(WIZARD_INTERACTION, {
+          action: 'enhanced file',
+          integration: INTEGRATION_NAME,
+          filePath,
+          eventsAdded: response.events.length,
+        });
       } else {
         fileSpinner.stop(`No changes needed for ${filePath}`);
+        analytics.capture(WIZARD_INTERACTION, {
+          action: 'file skipped',
+          integration: INTEGRATION_NAME,
+          filePath,
+          reason: 'no events to add',
+        });
       }
     } catch (error) {
       fileSpinner.stop(`✗ Failed to enhance ${filePath}`);
       debug('Error enhancing file:', error);
+      analytics.capture(WIZARD_INTERACTION, {
+        action: 'file enhancement failed',
+        integration: INTEGRATION_NAME,
+        filePath,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   }
 
@@ -336,6 +401,17 @@ The event setup wizard will modify multiple files. For the best experience, comm
     (sum, file) => sum + file.events.length,
     0,
   );
+
+  analytics.capture(WIZARD_INTERACTION, {
+    action: 'event setup completed',
+    integration: INTEGRATION_NAME,
+    totalEvents,
+    filesEnhanced: enhancedFiles.length,
+    filesProcessed: selectedFiles.length,
+  });
+
+  analytics.setTag('event-setup-total-events', totalEvents);
+  analytics.setTag('event-setup-files-enhanced', enhancedFiles.length);
 
   clack.outro(
     `Success! Added ${chalk.bold(
