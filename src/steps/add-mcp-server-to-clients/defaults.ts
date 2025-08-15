@@ -18,7 +18,7 @@ export const getDefaultServerConfig = (apiKey: string) => ({
   args: [
     '-y',
     'mcp-remote@latest',
-    'https://mcp.posthog.com/sse',
+    'https://mcp.posthog.com/mcp',
     '--header',
     `Authorization:\${POSTHOG_AUTH_HEADER}`,
   ],
