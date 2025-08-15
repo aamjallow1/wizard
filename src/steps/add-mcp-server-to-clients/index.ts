@@ -37,15 +37,6 @@ export const addMCPServerToClientsStep = async ({
 }): Promise<string[]> => {
   const region = cloudRegion ?? (await askForCloudRegion());
 
-  if (region === 'eu') {
-    if (!askPermission) {
-      await abort(
-        'The MCP server is not available in the EU region. It is coming soon!',
-      );
-    }
-    return [];
-  }
-
   const hasPermission = askPermission
     ? await abortIfCancelled(
         clack.select({
