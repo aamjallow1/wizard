@@ -54,5 +54,5 @@ export const DEFAULT_HOST_URL = IS_DEV
   ? 'http://localhost:8010'
   : 'https://us.i.posthog.com';
 export const ANALYTICS_POSTHOG_PUBLIC_PROJECT_WRITE_KEY = 'sTMFPsFhdP1Ssg';
-export const ANALYTICS_HOST_URL = 'https://internal-t.posthog.com';
+export const ANALYTICS_HOST_URL = 'https://internal-j.posthog.com';
 export const DUMMY_PROJECT_API_KEY = '_YOUR_POSTHOG_PROJECT_API_KEY_';
