@@ -36,7 +36,7 @@ export abstract class DefaultMCPClient extends MCPClient {
   }
 
   async addServer(apiKey: string): Promise<{ success: boolean }> {
-    return this._addServerType(apiKey, 'streamable-http');
+    return this._addServerType(apiKey, 'sse');
   }
 
   async _addServerType(
