@@ -326,7 +326,7 @@ describe('ClaudeMCPClient', () => {
 
       expect(getDefaultServerConfigMock).toHaveBeenCalledWith(
         mockApiKey,
-        'streamable-http',
+        'sse',
       );
     });
   });
