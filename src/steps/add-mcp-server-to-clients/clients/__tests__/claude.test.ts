@@ -324,7 +324,10 @@ describe('ClaudeMCPClient', () => {
 
       await client.addServer(mockApiKey);
 
-      expect(getDefaultServerConfigMock).toHaveBeenCalledWith(mockApiKey);
+      expect(getDefaultServerConfigMock).toHaveBeenCalledWith(
+        mockApiKey,
+        'streamable-http',
+      );
     });
   });
 
