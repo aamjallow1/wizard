@@ -24,4 +24,8 @@ export class CursorMCPClient extends DefaultMCPClient {
   async getConfigPath(): Promise<string> {
     return Promise.resolve(path.join(os.homedir(), '.cursor', 'mcp.json'));
   }
+
+  async addServer(apiKey: string): Promise<{ success: boolean }> {
+    return this._addServerType(apiKey, 'sse');
+  }
 }
