@@ -12,9 +12,14 @@ import { CursorMCPClient } from './clients/cursor';
 import { ClaudeMCPClient } from './clients/claude';
 import { getPersonalApiKey } from '../../mcp';
 import type { CloudRegion } from '../../utils/types';
+import { ClaudeCodeMCPClient } from './clients/claude-code';
 
 export const getSupportedClients = async (): Promise<MCPClient[]> => {
-  const allClients = [new CursorMCPClient(), new ClaudeMCPClient()];
+  const allClients = [
+    new CursorMCPClient(),
+    new ClaudeMCPClient(),
+    new ClaudeCodeMCPClient(),
+  ];
   const supportedClients: MCPClient[] = [];
 
   for (const client of allClients) {
