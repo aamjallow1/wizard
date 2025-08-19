@@ -118,10 +118,6 @@ const nextConfig = {
         source: "/ingest/:path*",
         destination: "${host}/:path*",
       },
-      {
-        source: "/ingest/flags",
-        destination: "${host}/flags",
-      },
     ];
   },
   // This is required to support PostHog trailing slash API requests
@@ -220,10 +216,6 @@ const nextConfig = {
         source: "/ingest/:path*",
         destination: "${host}/:path*",
       },
-      {
-        source: "/ingest/flags",
-        destination: "${host}/flags",
-      },
     ];
   },
   // This is required to support PostHog trailing slash API requests
@@ -291,10 +283,6 @@ const nextConfig = {
       {
         source: "/ingest/:path*",
         destination: "${host}/:path*",
-      },
-      {
-        source: "/ingest/flags",
-        destination: "${host}/flags",
       },
     ];
   },
