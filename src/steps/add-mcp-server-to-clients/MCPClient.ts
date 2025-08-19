@@ -36,6 +36,13 @@ export abstract class DefaultMCPClient extends MCPClient {
   }
 
   async addServer(apiKey: string): Promise<{ success: boolean }> {
+    return this._addServerType(apiKey, 'streamable-http');
+  }
+
+  async _addServerType(
+    apiKey: string,
+    type: 'sse' | 'streamable-http',
+  ): Promise<{ success: boolean }> {
     try {
       const configPath = await this.getConfigPath();
       const configDir = path.dirname(configPath);
@@ -44,7 +51,7 @@ export abstract class DefaultMCPClient extends MCPClient {
 
       const newServerConfig = {
         mcpServers: {
-          posthog: getDefaultServerConfig(apiKey),
+          posthog: getDefaultServerConfig(apiKey, type),
         },
       };
 

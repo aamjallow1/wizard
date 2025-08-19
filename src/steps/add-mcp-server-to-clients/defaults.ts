@@ -13,12 +13,17 @@ export const DefaultMCPClientConfig = z
   })
   .passthrough();
 
-export const getDefaultServerConfig = (apiKey: string) => ({
+type MCPServerType = 'sse' | 'streamable-http';
+
+export const getDefaultServerConfig = (
+  apiKey: string,
+  type: MCPServerType,
+) => ({
   command: 'npx',
   args: [
     '-y',
     'mcp-remote@latest',
-    'https://mcp.posthog.com/mcp',
+    `https://mcp.posthog.com/${type === 'sse' ? 'sse' : 'mcp'}`,
     '--header',
     `Authorization:\${POSTHOG_AUTH_HEADER}`,
   ],
