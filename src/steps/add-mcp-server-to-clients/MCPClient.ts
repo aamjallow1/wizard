@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as jsonc from 'jsonc-parser';
 import { getDefaultServerConfig } from './defaults';
-import { merge } from 'lodash';
 
 export abstract class MCPClient {
   name: string;
@@ -24,6 +24,10 @@ export abstract class DefaultMCPClient extends MCPClient {
     return 'mcpServers';
   }
 
+  customizeServerConfig(baseConfig: any): any {
+    return baseConfig;
+  }
+
   async isServerInstalled(): Promise<boolean> {
     try {
       const configPath = await this.getConfigPath();
@@ -33,7 +37,7 @@ export abstract class DefaultMCPClient extends MCPClient {
       }
 
       const configContent = await fs.promises.readFile(configPath, 'utf8');
-      const config = JSON.parse(configContent);
+      const config = jsonc.parse(configContent);
       const serverPropertyName = this.getServerPropertyName();
       return (
         serverPropertyName in config && 'posthog' in config[serverPropertyName]
@@ -58,32 +62,41 @@ export abstract class DefaultMCPClient extends MCPClient {
       await fs.promises.mkdir(configDir, { recursive: true });
 
       const serverPropertyName = this.getServerPropertyName();
-      const newServerConfig = {
-        [serverPropertyName]: {
-          posthog: getDefaultServerConfig(apiKey, type),
-        },
-      };
-
+      let configContent = '';
       let existingConfig = {};
 
       if (fs.existsSync(configPath)) {
-        const existingContent = await fs.promises.readFile(configPath, 'utf8');
-        existingConfig = JSON.parse(existingContent);
+        configContent = await fs.promises.readFile(configPath, 'utf8');
+        existingConfig = jsonc.parse(configContent) || {};
       }
 
-      const mergedConfig = merge({}, existingConfig, newServerConfig);
+      const baseConfig = getDefaultServerConfig(apiKey, type);
+      const newServerConfig = this.customizeServerConfig(baseConfig);
+      if (!existingConfig[serverPropertyName]) {
+        existingConfig[serverPropertyName] = {};
+      }
+      existingConfig[serverPropertyName].posthog = newServerConfig;
 
-      await fs.promises.writeFile(
-        configPath,
-        JSON.stringify(mergedConfig, null, 2),
-        'utf8',
+      const edits = jsonc.modify(
+        configContent,
+        [serverPropertyName, 'posthog'],
+        newServerConfig,
+        {
+          formattingOptions: {
+            tabSize: 2,
+            insertSpaces: true,
+          },
+        },
       );
+
+      const modifiedContent = jsonc.applyEdits(configContent, edits);
+
+      await fs.promises.writeFile(configPath, modifiedContent, 'utf8');
 
       return { success: true };
     } catch {
-      //
+      return { success: false };
     }
-    return { success: false };
   }
 
   async removeServer(): Promise<{ success: boolean }> {
@@ -95,20 +108,28 @@ export abstract class DefaultMCPClient extends MCPClient {
       }
 
       const configContent = await fs.promises.readFile(configPath, 'utf8');
-      const config = JSON.parse(configContent);
+      const config = jsonc.parse(configContent);
       const serverPropertyName = this.getServerPropertyName();
 
       if (
         serverPropertyName in config &&
         'posthog' in config[serverPropertyName]
       ) {
-        delete config[serverPropertyName].posthog;
-
-        await fs.promises.writeFile(
-          configPath,
-          JSON.stringify(config, null, 2),
-          'utf8',
+        const edits = jsonc.modify(
+          configContent,
+          [serverPropertyName, 'posthog'],
+          undefined,
+          {
+            formattingOptions: {
+              tabSize: 2,
+              insertSpaces: true,
+            },
+          },
         );
+
+        const modifiedContent = jsonc.applyEdits(configContent, edits);
+
+        await fs.promises.writeFile(configPath, modifiedContent, 'utf8');
 
         return { success: true };
       }
