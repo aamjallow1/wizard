@@ -10,12 +10,14 @@ import { ClaudeMCPClient } from './clients/claude';
 import { getPersonalApiKey } from '../../mcp';
 import type { CloudRegion } from '../../utils/types';
 import { ClaudeCodeMCPClient } from './clients/claude-code';
+import { VisualStudioCodeClient } from './clients/visual-studio-code';
 
 export const getSupportedClients = async (): Promise<MCPClient[]> => {
   const allClients = [
     new CursorMCPClient(),
     new ClaudeMCPClient(),
     new ClaudeCodeMCPClient(),
+    new VisualStudioCodeClient(),
   ];
   const supportedClients: MCPClient[] = [];
 
@@ -146,7 +148,6 @@ export const removeMCPServerFromClientsStep = async ({
   integration?: Integration;
 }): Promise<string[]> => {
   const installedClients = await getInstalledClients();
-
   if (installedClients.length === 0) {
     analytics.capture('wizard interaction', {
       action: 'no mcp servers to remove',
@@ -198,7 +199,6 @@ export const removeMCPServerFromClientsStep = async ({
 
 export const getInstalledClients = async (): Promise<MCPClient[]> => {
   const clients = await getSupportedClients();
-
   const installedClients: MCPClient[] = [];
 
   for (const client of clients) {
