@@ -6,6 +6,7 @@ import { merge } from 'lodash';
 export abstract class MCPClient {
   name: string;
   abstract getConfigPath(): Promise<string>;
+  abstract getServerPropertyName(): string;
   abstract isServerInstalled(): Promise<boolean>;
   abstract addServer(apiKey: string): Promise<{ success: boolean }>;
   abstract removeServer(): Promise<{ success: boolean }>;
@@ -18,6 +19,11 @@ export abstract class DefaultMCPClient extends MCPClient {
   constructor() {
     super();
   }
+
+  getServerPropertyName(): string {
+    return 'mcpServers';
+  }
+
   async isServerInstalled(): Promise<boolean> {
     try {
       const configPath = await this.getConfigPath();
@@ -28,8 +34,10 @@ export abstract class DefaultMCPClient extends MCPClient {
 
       const configContent = await fs.promises.readFile(configPath, 'utf8');
       const config = JSON.parse(configContent);
-
-      return 'mcpServers' in config && 'posthog' in config.mcpServers;
+      const serverPropertyName = this.getServerPropertyName();
+      return (
+        serverPropertyName in config && 'posthog' in config[serverPropertyName]
+      );
     } catch {
       return false;
     }
@@ -49,8 +57,9 @@ export abstract class DefaultMCPClient extends MCPClient {
 
       await fs.promises.mkdir(configDir, { recursive: true });
 
+      const serverPropertyName = this.getServerPropertyName();
       const newServerConfig = {
-        mcpServers: {
+        [serverPropertyName]: {
           posthog: getDefaultServerConfig(apiKey, type),
         },
       };
@@ -87,9 +96,13 @@ export abstract class DefaultMCPClient extends MCPClient {
 
       const configContent = await fs.promises.readFile(configPath, 'utf8');
       const config = JSON.parse(configContent);
+      const serverPropertyName = this.getServerPropertyName();
 
-      if ('mcpServers' in config && 'posthog' in config.mcpServers) {
-        delete config.mcpServers.posthog;
+      if (
+        serverPropertyName in config &&
+        'posthog' in config[serverPropertyName]
+      ) {
+        delete config[serverPropertyName].posthog;
 
         await fs.promises.writeFile(
           configPath,
