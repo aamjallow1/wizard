@@ -11,6 +11,7 @@ import { getPersonalApiKey } from '../../mcp';
 import type { CloudRegion } from '../../utils/types';
 import { ClaudeCodeMCPClient } from './clients/claude-code';
 import { VisualStudioCodeClient } from './clients/visual-studio-code';
+import { ZedClient } from './clients/zed';
 
 export const getSupportedClients = async (): Promise<MCPClient[]> => {
   const allClients = [
@@ -18,6 +19,7 @@ export const getSupportedClients = async (): Promise<MCPClient[]> => {
     new ClaudeMCPClient(),
     new ClaudeCodeMCPClient(),
     new VisualStudioCodeClient(),
+    new ZedClient(),
   ];
   const supportedClients: MCPClient[] = [];
 
