@@ -2,6 +2,7 @@ import { DefaultMCPClient } from '../MCPClient';
 import { DefaultMCPClientConfig, getDefaultServerConfig } from '../defaults';
 import { z } from 'zod';
 import { execSync } from 'child_process';
+import { analytics } from '../../../utils/analytics';
 
 export const ClaudeCodeMCPConfig = DefaultMCPClientConfig;
 
@@ -51,7 +52,14 @@ export class ClaudeCodeMCPClient extends DefaultMCPClient {
       config,
     )}'`;
 
-    execSync(command);
+    try {
+      execSync(command);
+    } catch {
+      analytics.captureException(
+        new Error('Failed to add server to Claude Code'),
+      );
+      return Promise.resolve({ success: false });
+    }
 
     return Promise.resolve({ success: true });
   }
@@ -59,7 +67,14 @@ export class ClaudeCodeMCPClient extends DefaultMCPClient {
   removeServer(): Promise<{ success: boolean }> {
     const command = `claude mcp remove --scope user posthog`;
 
-    execSync(command);
+    try {
+      execSync(command);
+    } catch {
+      analytics.captureException(
+        new Error('Failed to remove server from Claude Code'),
+      );
+      return Promise.resolve({ success: false });
+    }
 
     return Promise.resolve({ success: true });
   }
