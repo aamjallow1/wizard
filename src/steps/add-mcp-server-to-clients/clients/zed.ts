@@ -2,6 +2,7 @@ import z from 'zod';
 import * as path from 'path';
 import * as os from 'os';
 import { DefaultMCPClient } from '../MCPClient';
+import { getDefaultServerConfig } from '../defaults';
 
 export const ZedMCPConfig = z
   .object({
@@ -60,7 +61,8 @@ export class ZedClient extends DefaultMCPClient {
     throw new Error(`Unsupported platform: ${process.platform}`);
   }
 
-  customizeServerConfig(baseConfig: any): any {
+  getServerConfig(apiKey: string, type: 'sse' | 'streamable-http') {
+    const baseConfig = getDefaultServerConfig(apiKey, type);
     return {
       enabled: true,
       source: 'custom',

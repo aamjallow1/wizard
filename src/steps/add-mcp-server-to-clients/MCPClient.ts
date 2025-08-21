@@ -24,8 +24,8 @@ export abstract class DefaultMCPClient extends MCPClient {
     return 'mcpServers';
   }
 
-  customizeServerConfig(baseConfig: any): any {
-    return baseConfig;
+  getServerConfig(apiKey: string, type: 'sse' | 'streamable-http') {
+    return getDefaultServerConfig(apiKey, type);
   }
 
   async isServerInstalled(): Promise<boolean> {
@@ -70,8 +70,7 @@ export abstract class DefaultMCPClient extends MCPClient {
         existingConfig = jsonc.parse(configContent) || {};
       }
 
-      const baseConfig = getDefaultServerConfig(apiKey, type);
-      const newServerConfig = this.customizeServerConfig(baseConfig);
+      const newServerConfig = this.getServerConfig(apiKey, type);
       const typedConfig = existingConfig as Record<string, any>;
       if (!typedConfig[serverPropertyName]) {
         typedConfig[serverPropertyName] = {};
